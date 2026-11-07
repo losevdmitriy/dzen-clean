@@ -1,0 +1,309 @@
+/*
+ * AGTree v4.3.0 (build date: Wed, 14 Oct 2026 18:35:24 GMT)
+ * (c) 2026 Adguard Software Ltd.
+ * Released under the MIT license
+ * https://github.com/AdguardTeam/tsurlfilter/tree/master/packages/agtree#readme
+ */
+import GlobToRegExp from 'glob-to-regexp';
+import { CARET, ASTERISK, PIPE, DOT, CLOSE_CURLY_BRACKET, CLOSE_PARENTHESIS, CLOSE_SQUARE_BRACKET, DOLLAR_SIGN, ESCAPE_CHARACTER, OPEN_CURLY_BRACKET, OPEN_PARENTHESIS, OPEN_SQUARE_BRACKET, PLUS, QUESTION_MARK, SLASH, REGEX_MARKER, EMPTY } from './constants.js';
+
+/**
+ * @file Regular expression utilities.
+ */
+// Special RegExp constants
+const REGEX_START = CARET; // '^'
+const REGEX_END = DOLLAR_SIGN; // '$'
+const REGEX_ANY_CHARACTERS = DOT + ASTERISK; // '.*'
+// Special adblock pattern symbols and their RegExp equivalents
+const ADBLOCK_URL_START = PIPE + PIPE; // '||'
+const ADBLOCK_URL_START_REGEX = '^(http|https|ws|wss)://([a-z0-9-_.]+\\.)?';
+const ADBLOCK_URL_SEPARATOR = CARET; // '^'
+const ADBLOCK_URL_SEPARATOR_REGEX = '([^ a-zA-Z0-9.%_-]|$)';
+const ADBLOCK_WILDCARD = ASTERISK; // '*'
+const ADBLOCK_WILDCARD_REGEX = REGEX_ANY_CHARACTERS;
+// Negation wrapper for RegExp patterns
+const REGEX_NEGATION_PREFIX = '^((?!';
+const REGEX_NEGATION_SUFFIX = ').)*$';
+/**
+ * Special RegExp symbols.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#special-escape
+ */
+const SPECIAL_REGEX_SYMBOLS = new Set([
+    ASTERISK,
+    CARET,
+    CLOSE_CURLY_BRACKET,
+    CLOSE_PARENTHESIS,
+    CLOSE_SQUARE_BRACKET,
+    DOLLAR_SIGN,
+    DOT,
+    ESCAPE_CHARACTER,
+    OPEN_CURLY_BRACKET,
+    OPEN_PARENTHESIS,
+    OPEN_SQUARE_BRACKET,
+    PIPE,
+    PLUS,
+    QUESTION_MARK,
+    SLASH,
+]);
+/**
+ * Utility functions for working with RegExp patterns.
+ */
+class RegExpUtils {
+    /**
+     * Checks whether a string possibly is a RegExp pattern.
+     * Flags are not supported.
+     *
+     * Note: it does not perform a full validation of the pattern,
+     * it just checks if the string starts and ends with a slash.
+     *
+     * @param pattern Pattern to check.
+     *
+     * @returns `true` if the string is a RegExp pattern, `false` otherwise.
+     */
+    static isRegexPattern(pattern) {
+        const trimmedPattern = pattern.trim();
+        // Avoid false positives
+        return trimmedPattern.length > REGEX_MARKER.length * 2
+            && trimmedPattern.startsWith(REGEX_MARKER)
+            && trimmedPattern.endsWith(REGEX_MARKER)
+            && trimmedPattern[REGEX_MARKER.length - 2] !== ESCAPE_CHARACTER;
+    }
+    /**
+     * Checks whether a string is a negated RegExp pattern.
+     *
+     * @param pattern Pattern to check.
+     *
+     * @returns `true` if the string is a negated RegExp pattern, `false` otherwise.
+     */
+    static isNegatedRegexPattern(pattern) {
+        if (pattern.startsWith(REGEX_MARKER) && pattern.endsWith(REGEX_MARKER)) {
+            const innerPattern = pattern.slice(REGEX_MARKER.length, pattern.length - REGEX_MARKER.length);
+            return innerPattern.startsWith(REGEX_NEGATION_PREFIX) && innerPattern.endsWith(REGEX_NEGATION_SUFFIX);
+        }
+        return pattern.startsWith(REGEX_NEGATION_PREFIX) && pattern.endsWith(REGEX_NEGATION_SUFFIX);
+    }
+    /**
+     * Removes negation from a RegExp pattern.
+     *
+     * @param pattern RegExp pattern to remove negation from.
+     *
+     * @returns RegExp pattern without negation.
+     */
+    static removeNegationFromRegexPattern(pattern) {
+        let result = pattern.trim();
+        const slashes = RegExpUtils.isRegexPattern(result);
+        if (slashes) {
+            result = result.substring(REGEX_MARKER.length, result.length - REGEX_MARKER.length);
+        }
+        if (result.startsWith(REGEX_NEGATION_PREFIX) && result.endsWith(REGEX_NEGATION_SUFFIX)) {
+            result = result.substring(REGEX_NEGATION_PREFIX.length, result.length - REGEX_NEGATION_SUFFIX.length);
+        }
+        return slashes ? `${REGEX_MARKER}${result}${REGEX_MARKER}` : result;
+    }
+    /**
+     * Negates a RegExp pattern. Technically, this method wraps the pattern in `^((?!` and `).)*$`.
+     *
+     * RegExp modifiers are not supported.
+     *
+     * @param pattern Pattern to negate (can be wrapped in slashes or not).
+     *
+     * @returns Negated RegExp pattern.
+     */
+    static negateRegexPattern(pattern) {
+        let result = pattern.trim();
+        let slashes = false;
+        // Remove the leading and trailing slashes (/)
+        if (RegExpUtils.isRegexPattern(result)) {
+            result = result.substring(REGEX_MARKER.length, result.length - REGEX_MARKER.length);
+            slashes = true;
+        }
+        // Only negate the pattern if it's not already negated
+        if (!(result.startsWith(REGEX_NEGATION_PREFIX) && result.endsWith(REGEX_NEGATION_SUFFIX))) {
+            // Remove leading caret (^)
+            if (result.startsWith(REGEX_START)) {
+                result = result.substring(REGEX_START.length);
+            }
+            // Remove trailing dollar sign ($)
+            if (result.endsWith(REGEX_END)) {
+                result = result.substring(0, result.length - REGEX_END.length);
+            }
+            // Wrap the pattern in the negation
+            result = `${REGEX_NEGATION_PREFIX}${result}${REGEX_NEGATION_SUFFIX}`;
+        }
+        // Add the leading and trailing slashes back if they were there
+        if (slashes) {
+            result = `${REGEX_MARKER}${result}${REGEX_MARKER}`;
+        }
+        return result;
+    }
+    /**
+     * Ensures that a pattern is wrapped in slashes.
+     *
+     * @param pattern Pattern to ensure slashes for.
+     *
+     * @returns Pattern with slashes.
+     */
+    static ensureSlashes(pattern) {
+        let result = pattern;
+        if (!result.startsWith(REGEX_MARKER)) {
+            result = `${REGEX_MARKER}${result}`;
+        }
+        if (!result.endsWith(REGEX_MARKER)) {
+            result += REGEX_MARKER;
+        }
+        return result;
+    }
+    /**
+     * Converts a basic adblock rule pattern to a RegExp pattern. Based on
+     * https://github.com/AdguardTeam/tsurlfilter/blob/9b26e0b4a0e30b87690bc60f7cf377d112c3085c/packages/tsurlfilter/src/rules/simple-regex.ts#L219.
+     *
+     * @see {@link https://kb.adguard.com/en/general/how-to-create-your-own-ad-filters#basic-rules}
+     *
+     * @param pattern Pattern to convert.
+     *
+     * @returns RegExp equivalent of the pattern.
+     */
+    static patternToRegexp(pattern) {
+        const trimmed = pattern.trim();
+        // Return regex for any character sequence if the pattern is just |, ||, * or empty
+        if (trimmed === ADBLOCK_URL_START
+            || trimmed === PIPE
+            || trimmed === ADBLOCK_WILDCARD
+            || trimmed === EMPTY) {
+            return REGEX_ANY_CHARACTERS;
+        }
+        // If the pattern is already a RegExp, just return it, but remove the leading and trailing slashes
+        if (RegExpUtils.isRegexPattern(pattern)) {
+            return pattern.substring(REGEX_MARKER.length, pattern.length - REGEX_MARKER.length);
+        }
+        let result = EMPTY;
+        let offset = 0;
+        let len = trimmed.length;
+        // Handle leading pipes
+        if (trimmed[0] === PIPE) {
+            if (trimmed[1] === PIPE) {
+                // Replace adblock url start (||) with its RegExp equivalent
+                result += ADBLOCK_URL_START_REGEX;
+                offset = ADBLOCK_URL_START.length;
+            }
+            else {
+                // Replace single pipe (|) with the RegExp start symbol (^)
+                result += REGEX_START;
+                offset = REGEX_START.length;
+            }
+        }
+        // Handle trailing pipes
+        let trailingPipe = false;
+        if (trimmed.endsWith(PIPE)) {
+            trailingPipe = true;
+            len -= PIPE.length;
+        }
+        // Handle the rest of the pattern, if any
+        for (; offset < len; offset += 1) {
+            if (trimmed[offset] === ADBLOCK_WILDCARD) {
+                // Replace adblock wildcard (*) with its RegExp equivalent
+                result += ADBLOCK_WILDCARD_REGEX;
+            }
+            else if (trimmed[offset] === ADBLOCK_URL_SEPARATOR) {
+                // Replace adblock url separator (^) with its RegExp equivalent
+                result += ADBLOCK_URL_SEPARATOR_REGEX;
+            }
+            else if (SPECIAL_REGEX_SYMBOLS.has(trimmed[offset])) {
+                // Escape special RegExp symbols (we handled pipe (|) and asterisk (*) already)
+                result += ESCAPE_CHARACTER + trimmed[offset];
+            }
+            else {
+                // Just add any other character
+                result += trimmed[offset];
+            }
+        }
+        // Handle trailing pipes
+        if (trailingPipe) {
+            // Replace trailing pipe (|) with the RegExp end symbol ($)
+            result += REGEX_END;
+        }
+        return result;
+    }
+    /**
+     * Creates a length-matching lookahead: `(?=.{min,max}$)`, which asserts
+     * that the string length is between min and max.
+     *
+     * @param min Minimum length or `null` for no minimum (default to `0`).
+     * @param max Maximum length or `null` for no maximum (default to no maximum).
+     *
+     * @returns Length-matching lookahead.
+     */
+    static getLengthLookahead(min, max) {
+        return `(?=.{${min ?? 0},${max ?? ''}}$)`;
+    }
+    /**
+     * Creates a length-matching regular expression string: /^(?=.{min,max}$).*\/s
+     * Where:
+     * - (?=.{min,max}$) is a lookahead that ensures the string length is between min and max
+     * - .* matches any character (including newlines, due to the 's' flag).
+     *
+     * @param min Minimum length or `null` for no minimum (default to `0`).
+     * @param max Maximum length or `null` for no maximum (default to no maximum).
+     *
+     * @returns Length-matching regular expression string.
+     */
+    static getLengthRegexp(min, max) {
+        return `/^${RegExpUtils.getLengthLookahead(min, max)}.*/s`;
+    }
+    /**
+     * Converts a glob pattern to a regular expression source body with the
+     * leading caret anchor removed, e.g. `.*track.*banner.*$` for the glob
+     * `*track*banner*`. The result is suitable for embedding into a larger
+     * pattern which is already anchored, e.g. as a lookahead: `(?=<body>)`.
+     *
+     * @param glob Glob pattern to convert.
+     *
+     * @returns Glob-converted regular expression source body.
+     *
+     * @example
+     * // Returns '.*track.*banner.*$'
+     * RegExpUtils.globToRegExpBody('*track*banner*');
+     */
+    static globToRegExpBody(glob) {
+        return GlobToRegExp(glob).source.replace(/^\^/, EMPTY);
+    }
+    /**
+     * Escapes all special RegExp symbols in the specified string, so that
+     * the string can be embedded into a larger regular expression and be
+     * matched literally.
+     *
+     * @param value String to escape.
+     *
+     * @returns Escaped string.
+     *
+     * @example
+     * // Returns '\$\('http'\)'
+     * RegExpUtils.escapeRegexSpecials("$('http')");
+     */
+    static escapeRegexSpecials(value) {
+        let result = EMPTY;
+        for (const ch of value) {
+            result += SPECIAL_REGEX_SYMBOLS.has(ch)
+                ? ESCAPE_CHARACTER + ch
+                : ch;
+        }
+        return result;
+    }
+    /**
+     * Converts a glob pattern to a RegExp string with slashes and 's' flag.
+     *
+     * @param glob Glob pattern to convert.
+     *
+     * @returns RegExp string.
+     *
+     * @example
+     * // Returns '/^foo.*bar$/s'
+     * RegExpUtils.globToRegExp('foo*bar');
+     */
+    static globToRegExp(glob) {
+        return `${REGEX_MARKER + GlobToRegExp(glob).source + REGEX_MARKER}s`;
+    }
+}
+
+export { ADBLOCK_URL_SEPARATOR, ADBLOCK_URL_SEPARATOR_REGEX, ADBLOCK_URL_START, ADBLOCK_URL_START_REGEX, ADBLOCK_WILDCARD, ADBLOCK_WILDCARD_REGEX, REGEX_ANY_CHARACTERS, REGEX_END, REGEX_NEGATION_PREFIX, REGEX_NEGATION_SUFFIX, REGEX_START, RegExpUtils, SPECIAL_REGEX_SYMBOLS };

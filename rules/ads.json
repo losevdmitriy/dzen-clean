@@ -1,0 +1,33 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {"type": "block"},
+    "condition": {
+      "requestDomains": ["an.yandex.ru", "ads.adfox.ru", "r.mradx.net"],
+      "initiatorDomains": ["dzen.ru"],
+      "resourceTypes": ["script", "image", "xmlhttprequest", "sub_frame", "ping", "media", "other"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {"type": "block"},
+    "condition": {
+      "urlFilter": "||yandex.ru/ads/",
+      "initiatorDomains": ["dzen.ru"],
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "image"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {"type": "block"},
+    "condition": {
+      "urlFilter": "||ad.mail.ru/",
+      "initiatorDomains": ["dzen.ru"],
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "image", "ping", "media"]
+    }
+  },
+  {"id":4,"priority":10000,"action":{"type":"allow"},"condition":{"urlFilter":"||ad.mail.ru/static/admanhtml/*rbadman-html5.min.js","initiatorDomains":["dzen.ru"],"resourceTypes":["script"]}}
+]

@@ -1,0 +1,177 @@
+{
+  "name": "@adguard/tswebextension",
+  "description": "This is a TypeScript library that implements AdGuard's extension API",
+  "type": "module",
+  "main": "dist/index.js",
+  "typings": "dist/types/src/lib/mv2/background/index.d.ts",
+  "sideEffects": [
+    "dist/assistant-inject.js",
+    "dist/content-script.js",
+    "dist/content-script.mv3.js",
+    "dist/gpc.mv3.js",
+    "dist/hide-document-referrer.mv3.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./mv3": {
+      "types": "./dist/types/index.mv3.d.ts",
+      "default": "./dist/index.mv3.js"
+    },
+    "./mv3/utils": {
+      "types": "./dist/types/mv3-utils.d.ts",
+      "default": "./dist/mv3-utils.js"
+    },
+    "./mv3/gpc": {
+      "default": "./dist/gpc.mv3.js"
+    },
+    "./mv3/hide-document-referrer": {
+      "default": "./dist/hide-document-referrer.mv3.js"
+    },
+    "./mv3/content-script": {
+      "default": "./dist/content-script.mv3.js"
+    },
+    "./content-script": {
+      "types": "./dist/types/content-script.d.ts",
+      "default": "./dist/content-script.js"
+    },
+    "./content-script/css-hits-counter": {
+      "types": "./dist/types/css-hits-counter.d.ts",
+      "default": "./dist/css-hits-counter.js"
+    },
+    "./cli": {
+      "types": "./dist/types/cli.d.ts",
+      "default": "./dist/cli.js"
+    },
+    "./assistant-inject": {
+      "types": "./dist/types/assistant-inject.d.ts",
+      "default": "./dist/assistant-inject.js"
+    },
+    "./filters-storage": {
+      "types": "./dist/types/filters-storage.d.ts",
+      "default": "./dist/filters-storage.js"
+    }
+  },
+  "bin": {
+    "tswebextension": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "Adguard Software Ltd.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdGuardSoftwareLimited/ext-tsurlfilter.git",
+    "directory": "packages/tswebextension"
+  },
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=22"
+  },
+  "bugs": {
+    "url": "https://github.com/AdguardTeam/tsurlfilter/issues"
+  },
+  "homepage": "https://github.com/AdguardTeam/tsurlfilter/tree/master/packages/tswebextension#readme",
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "eslint"
+    ]
+  },
+  "dependencies": {
+    "@adguard/assistant": "^4.4.12",
+    "@adguard/extended-css": "2.2.0",
+    "@adguard/scriptlets": "2.5.1",
+    "@adguard/text-encoding": "^0.8.3",
+    "bowser": "2.11.0",
+    "chrome-types": "^0.1.342",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
+    "idb": "^8.0.1",
+    "lodash-es": "^4.17.21",
+    "lru-cache": "^11.0.2",
+    "nanoid": "^5.0.9",
+    "superjson": "^2.2.1",
+    "tldts": "^5.7.112",
+    "tslib": "^2.8.1",
+    "webextension-polyfill": "0.12.0",
+    "zod": "3.24.4",
+    "@adguard/logger": "^2.0.1",
+    "@adguard/dnr-converter": "^2.0.0",
+    "@adguard/agtree": "^4.3.0",
+    "@adguard/tsurlfilter": "^6.0.4"
+  },
+  "devDependencies": {
+    "@adguard/eslint-plugin-logger-context": "^1.0.1",
+    "@vitest/browser": "^5.0.0",
+    "@vitest/browser-playwright": "^5.0.0",
+    "playwright": "^1.52.0",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-swc": "^0.4.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@swc-node/register": "^1.10.9",
+    "@swc/core": "^1.10.18",
+    "@types/chrome": "^0.0.305",
+    "@types/fs-extra": "^11.0.4",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.14.0",
+    "@types/sinon-chrome": "2.2.11",
+    "@types/webextension-polyfill": "^0.12.1",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "@vitest/coverage-v8": "^5.0.0",
+    "@vitest/eslint-plugin": "^1.1.12",
+    "coveralls": "3.1.1",
+    "cross-env": "^7.0.3",
+    "eslint": "8.57.1",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-import-newlines": "1.4.0",
+    "eslint-plugin-jsdoc": "^48.11.0",
+    "fake-indexeddb": "^6.0.0",
+    "lint-staged": "^13.2.2",
+    "markdownlint": "^0.37.4",
+    "markdownlint-cli": "^0.44.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.28.0",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-dts": "^6.0.2",
+    "rollup-plugin-node-externals": "^8.0.0",
+    "sinon-chrome": "^3.0.1",
+    "terser": "^5.21.0",
+    "ts-morph": "^26.0.0",
+    "tsd": "^0.32.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.0"
+  },
+  "version": "6.0.1",
+  "scripts": {
+    "lint": "pnpm lint:code && pnpm lint:types && pnpm lint:md",
+    "lint:code": "eslint --cache .",
+    "lint:types": "tsc",
+    "lint:md": "markdownlint .",
+    "prebuild": "rimraf dist",
+    "build": "pnpm prebuild && pnpm build:types && rollup -c rollup.config.ts --configPlugin @rollup/plugin-swc",
+    "build:types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --outdir dist/types && tsx tasks/transform-dts.ts",
+    "update:companiesdb": "tsx tasks/update-companiesdb.ts",
+    "start": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-swc -w",
+    "test": "vitest run",
+    "test:ci": "vitest run --no-cache --reporter default --reporter junit --outputFile=./tests-reports/tswebextension.xml",
+    "test:mv2": "vitest run --project mv2",
+    "test:mv3": "vitest run --project mv3",
+    "test:common": "vitest run --project common",
+    "test:coverage": "vitest run --coverage",
+    "test:smoke": "pnpm run test:smoke:exports && (cd test/builders/rollup-ts && pnpm test)",
+    "test:smoke:exports": "./test/smoke/exports/test.sh",
+    "test:e2e": "vitest run --project browser",
+    "test:prod": "pnpm lint && pnpm test:smoke && pnpm test:ci && pnpm test:e2e",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "precommit": "lint-staged",
+    "tgz": "pnpm pack --out tswebextension.tgz"
+  }
+}

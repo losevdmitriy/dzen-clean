@@ -1,0 +1,120 @@
+{
+  "name": "@adguard/dnr-converter",
+  "description": "A converter that transforms adblock-style filtering rules into rules compatible with the Declarative Net Request (DNR) API.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/types/src/index.d.ts",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/types/src/index.d.ts"
+    },
+    "./cli": {
+      "types": "./dist/types/cli/index.d.ts",
+      "default": "./dist/cli.cjs"
+    }
+  },
+  "bin": {
+    "dnr-converter": "dist/cli.cjs"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/types/src/index.d.ts"
+      ],
+      "cli": [
+        "dist/types/cli/index.d.ts"
+      ]
+    }
+  },
+  "author": "Adguard Software Ltd.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdGuardSoftwareLimited/ext-tsurlfilter.git",
+    "directory": "packages/dnr-converter"
+  },
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=22"
+  },
+  "bugs": {
+    "url": "https://github.com/AdguardTeam/tsurlfilter/issues"
+  },
+  "homepage": "https://github.com/AdguardTeam/tsurlfilter/tree/master/packages/dnr-converter#readme",
+  "lint-staged": {
+    "{src,cli,test,tasks}/**/*.ts": [
+      "eslint"
+    ]
+  },
+  "peerDependencies": {
+    "@adguard/re2-wasm": "1.2.0"
+  },
+  "dependencies": {
+    "@adguard/scriptlets": "2.5.1",
+    "commander": "^12.1.0",
+    "punycode": "2.3.1",
+    "valibot": "^1.1.0",
+    "@adguard/agtree": "^4.2.1",
+    "@adguard/logger": "^2.0.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-swc": "^0.4.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/chrome": "^0.0.305",
+    "@types/node": "^22.14.0",
+    "@types/punycode": "2.1.4",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "@vitest/coverage-v8": "^5.0.0",
+    "eslint": "8.57.1",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-plugin-boundaries": "^5.0.1",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-import-newlines": "1.4.0",
+    "eslint-plugin-jsdoc": "^48.11.0",
+    "eslint-plugin-n": "^17.21.3",
+    "lint-staged": "^13.2.2",
+    "markdownlint": "^0.37.4",
+    "markdownlint-cli": "^0.44.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.28.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-dts": "^6.0.2",
+    "rollup-plugin-node-externals": "^8.0.0",
+    "tsd": "^0.32.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.0",
+    "@adguard/tsurlfilter": "^6.0.3",
+    "@adguard/eslint-plugin-logger-context": "^1.0.1"
+  },
+  "version": "2.0.0",
+  "scripts": {
+    "lint": "pnpm lint:code && pnpm lint:types && pnpm lint:md",
+    "lint:code": "eslint --cache --ignore-path .gitignore .",
+    "lint:types": "tsc",
+    "lint:md": "markdownlint .",
+    "start": "rollup -c rollup.config.ts --configPlugin typescript -w",
+    "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript",
+    "docs:examples": "tsx tasks/generate-examples.ts",
+    "test": "vitest run",
+    "test:light": "vitest run --exclude \"**/*benchmark*.test.ts\"",
+    "test:watch": "vitest run --watch",
+    "test:ci": "vitest run --no-cache --reporter default --reporter junit --outputFile=./tests-reports/dnr-converter.xml",
+    "test:coverage": "vitest run --coverage",
+    "test:smoke": "(cd test/smoke/esm && pnpm test) && (cd test/smoke/exports && pnpm test)",
+    "test:prod": "pnpm lint && pnpm test:smoke && pnpm test -- --no-cache",
+    "test:debug": "vitest run --inspect --no-file-parallelism --watch",
+    "precommit": "lint-staged",
+    "tgz": "pnpm pack --out dnr-converter.tgz"
+  }
+}

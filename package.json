@@ -1,0 +1,24 @@
+{
+  "name": "dzen-clean",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "assets": "node tools/engine-assets.mjs",
+    "bundle": "node tools/bundle.mjs",
+    "test": "node tests/run.cjs && node tests/universal.cjs && node tests/migration.cjs && node tests/popup-regression.cjs && node tests/dzen-regression.cjs"
+  },
+  "dependencies": {
+    "@adguard/api-mv3": "3.0.0",
+    "@adguard/agtree": "4.3.0"
+  },
+  "devDependencies": {
+    "@adguard/dnr-rulesets": "5.0.20261013160024",
+    "@adguard/dnr-converter": "2.0.0",
+    "esbuild": "0.25.12",
+    "playwright": "1.62.1"
+  }
+}

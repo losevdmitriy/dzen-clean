@@ -1,0 +1,77 @@
+{
+  "name": "@adguard/api-mv3",
+  "description": "This is a TypeScript library that implements AdGuard's extension API for MV3",
+  "main": "dist/adguard-api.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/types/background/index.d.ts",
+      "default": "./dist/adguard-api.js"
+    },
+    "./content-script": {
+      "types": "./dist/types/content-script/index.d.ts",
+      "default": "./dist/adguard-content.js"
+    },
+    "./assistant": {
+      "types": "./dist/types/content-script/assistant.d.ts",
+      "default": "./dist/adguard-assistant.js"
+    }
+  },
+  "author": "Adguard Software Ltd.",
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdGuardSoftwareLimited/ext-tsurlfilter.git",
+    "directory": "packages/adguard-api-mv3"
+  },
+  "bugs": {
+    "url": "https://github.com/AdguardTeam/tsurlfilter/issues"
+  },
+  "homepage": "https://github.com/AdguardTeam/tsurlfilter/tree/master/packages/adguard-api-mv3#readme",
+  "dependencies": {
+    "zod": "3.24.4",
+    "@adguard/tswebextension": "^6.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-swc": "^0.4.0",
+    "@swc/core": "^1.10.18",
+    "@types/node": "^22.14.0",
+    "@types/webextension-polyfill": "^0.12.1",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "core-js": "^3.33.3",
+    "cross-env": "^7.0.3",
+    "eslint": "8.57.1",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-jsdoc": "^48.11.0",
+    "jsdom": "^25.0.1",
+    "markdownlint": "^0.37.4",
+    "markdownlint-cli": "^0.44.0",
+    "rollup": "^4.28.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.0"
+  },
+  "version": "3.0.0",
+  "scripts": {
+    "test:ci": "vitest run --reporter default --reporter junit --outputFile=./tests-reports/adguard-api-mv3.xml",
+    "test:prod": "pnpm lint && pnpm test:ci",
+    "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-swc && pnpm postbuild",
+    "postbuild": "pnpm types",
+    "prepush": "pnpm build",
+    "types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --outdir dist/types",
+    "lint": "pnpm lint:code && pnpm lint:types && pnpm lint:md",
+    "lint:code": "eslint --cache --ignore-path .gitignore .",
+    "lint:types": "tsc",
+    "lint:md": "markdownlint .",
+    "tgz": "pnpm pack --out adguard-api-mv3.tgz"
+  }
+}

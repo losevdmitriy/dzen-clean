@@ -1,0 +1,896 @@
+import { DomainListParser, RuleParser, RuleCategory, NetworkRuleType } from '@adguard/agtree';
+import { RuleConverter } from '@adguard/agtree/converter';
+import { RuleGenerator } from '@adguard/agtree/generator';
+import { MASK_REGEX_RULE } from '../constants.js';
+import { ResourceType } from '../declarative-rule/rule-condition.js';
+import { getErrorMessage } from '../utils/error.js';
+import { fastHash31, hasSpaces, fastHash } from '../utils/string.js';
+import { OPTION_NAMES } from './option-names.js';
+import { RuleBadfilter } from './rule-badfilter.js';
+import { RulePriority } from './rule-priority.js';
+
+/**
+ * Separator used in network-rule modifier domain lists (`$domain=a|b`).
+ */ const DOMAIN_LIST_PIPE_SEPARATOR = '|';
+/**
+ * Maps canonical content-type modifier names to their DNR `ResourceType`
+ * equivalents. Only modifier names that correspond to adblock filter syntax
+ * content-type options are included here (excluded `webtransport` and `webbundle`).
+ */ const CONTENT_TYPE_RESOURCE_TYPE_MAP = {
+    [OPTION_NAMES.DOCUMENT]: ResourceType.MainFrame,
+    [OPTION_NAMES.SUBDOCUMENT]: ResourceType.SubFrame,
+    [OPTION_NAMES.SCRIPT]: ResourceType.Script,
+    [OPTION_NAMES.STYLESHEET]: ResourceType.Stylesheet,
+    [OPTION_NAMES.OBJECT]: ResourceType.Object,
+    [OPTION_NAMES.IMAGE]: ResourceType.Image,
+    [OPTION_NAMES.XMLHTTPREQUEST]: ResourceType.XmlHttpRequest,
+    [OPTION_NAMES.MEDIA]: ResourceType.Media,
+    [OPTION_NAMES.FONT]: ResourceType.Font,
+    [OPTION_NAMES.WEBSOCKET]: ResourceType.WebSocket,
+    [OPTION_NAMES.OTHER]: ResourceType.Other,
+    [OPTION_NAMES.PING]: ResourceType.Ping
+};
+/**
+ * Modifier names that can be negated with `~`.
+ *
+ * Any modifier not in this set will cause a {@link SyntaxError} when negated.
+ */ const NEGATABLE_MODIFIERS = new Set([
+    OPTION_NAMES.FIRST_PARTY,
+    OPTION_NAMES.THIRD_PARTY,
+    OPTION_NAMES.MATCH_CASE,
+    OPTION_NAMES.DOCUMENT,
+    OPTION_NAMES.DOC,
+    OPTION_NAMES.SCRIPT,
+    OPTION_NAMES.STYLESHEET,
+    OPTION_NAMES.SUBDOCUMENT,
+    OPTION_NAMES.OBJECT,
+    OPTION_NAMES.IMAGE,
+    OPTION_NAMES.XMLHTTPREQUEST,
+    OPTION_NAMES.MEDIA,
+    OPTION_NAMES.FONT,
+    OPTION_NAMES.WEBSOCKET,
+    OPTION_NAMES.OTHER,
+    OPTION_NAMES.PING,
+    OPTION_NAMES.EXTENSION
+]);
+/**
+ * Request prefix used in `$removeheader` modifier values.
+ */ const REMOVE_HEADER_REQUEST_PREFIX = 'request:';
+/**
+ * Headers that may not be removed via the `$removeheader` modifier.
+ *
+ * @see {@link https://kb.adguard.com/en/general/how-to-create-your-own-ad-filters#removeheader-modifier}
+ */ const FORBIDDEN_REMOVE_HEADERS = new Set([
+    'access-control-allow-origin',
+    'access-control-allow-credentials',
+    'access-control-allow-headers',
+    'access-control-allow-methods',
+    'access-control-expose-headers',
+    'access-control-max-age',
+    'access-control-request-headers',
+    'access-control-request-method',
+    'origin',
+    'timing-allow-origin',
+    'allow',
+    'cross-origin-embedder-policy',
+    'cross-origin-opener-policy',
+    'cross-origin-resource-policy',
+    'content-security-policy',
+    'content-security-policy-report-only',
+    'expect-ct',
+    'feature-policy',
+    'origin-isolation',
+    'strict-transport-security',
+    'upgrade-insecure-requests',
+    'x-content-type-options',
+    'x-download-options',
+    'x-frame-options',
+    'x-permitted-cross-domain-policies',
+    'x-powered-by',
+    'x-xss-protection',
+    'public-key-pins',
+    'public-key-pins-report-only',
+    'sec-websocket-key',
+    'sec-websocket-extensions',
+    'sec-websocket-accept',
+    'sec-websocket-protocol',
+    'sec-websocket-version',
+    'p3p',
+    'sec-fetch-mode',
+    'sec-fetch-dest',
+    'sec-fetch-site',
+    'sec-fetch-user',
+    'referrer-policy',
+    'content-type',
+    'content-length',
+    'accept',
+    'accept-encoding',
+    'host',
+    'connection',
+    'transfer-encoding',
+    'upgrade'
+]);
+/**
+ * Modifier names that are compatible with `$removeparam`.
+ * Ported from tsurlfilter's `RemoveParamCompatibleOptions`.
+ */ const REMOVEPARAM_COMPATIBLE_MODIFIERS = new Set([
+    OPTION_NAMES.REMOVEPARAM,
+    OPTION_NAMES.THIRD_PARTY,
+    OPTION_NAMES.IMPORTANT,
+    OPTION_NAMES.MATCH_CASE,
+    OPTION_NAMES.BADFILTER,
+    OPTION_NAMES.SCRIPT,
+    OPTION_NAMES.STYLESHEET,
+    OPTION_NAMES.SUBDOCUMENT,
+    OPTION_NAMES.OBJECT,
+    OPTION_NAMES.IMAGE,
+    OPTION_NAMES.XMLHTTPREQUEST,
+    OPTION_NAMES.MEDIA,
+    OPTION_NAMES.FONT,
+    OPTION_NAMES.WEBSOCKET,
+    OPTION_NAMES.OTHER,
+    OPTION_NAMES.PING
+]);
+/**
+ * Modifier names that are compatible with `$permissions`.
+ * Ported from tsurlfilter's `PermissionsCompatibleOptions`.
+ *
+ * `$permissions` is compatible with `$important`, `$badfilter`, `$domain`,
+ * and all content-type modifiers (`$subdocument`, `$script`, `$stylesheet`,
+ * etc.). This mirrors the runtime behavior of tsurlfilter's `NetworkRule`,
+ * which tracks content-type and `$domain` modifiers separately from the
+ * option bitmask used by `validatePermissionsRule`.
+ */ const PERMISSIONS_COMPATIBLE_MODIFIERS = new Set([
+    OPTION_NAMES.PERMISSIONS,
+    OPTION_NAMES.IMPORTANT,
+    OPTION_NAMES.BADFILTER,
+    OPTION_NAMES.DOMAIN,
+    OPTION_NAMES.SUBDOCUMENT,
+    OPTION_NAMES.SCRIPT,
+    OPTION_NAMES.IMAGE,
+    OPTION_NAMES.STYLESHEET,
+    OPTION_NAMES.OBJECT,
+    OPTION_NAMES.XMLHTTPREQUEST,
+    OPTION_NAMES.MEDIA,
+    OPTION_NAMES.FONT,
+    OPTION_NAMES.WEBSOCKET,
+    OPTION_NAMES.OTHER,
+    OPTION_NAMES.PING
+]);
+/**
+ * Modifier names that are compatible with `$header`.
+ * Ported from tsurlfilter's `HeaderCompatibleOptions`.
+ */ const HEADER_COMPATIBLE_MODIFIERS = new Set([
+    OPTION_NAMES.HEADER,
+    OPTION_NAMES.IMPORTANT,
+    OPTION_NAMES.CSP,
+    OPTION_NAMES.REMOVEHEADER,
+    OPTION_NAMES.THIRD_PARTY,
+    OPTION_NAMES.MATCH_CASE,
+    OPTION_NAMES.BADFILTER,
+    OPTION_NAMES.SCRIPT,
+    OPTION_NAMES.STYLESHEET,
+    OPTION_NAMES.SUBDOCUMENT,
+    OPTION_NAMES.OBJECT,
+    OPTION_NAMES.IMAGE,
+    OPTION_NAMES.XMLHTTPREQUEST,
+    OPTION_NAMES.MEDIA,
+    OPTION_NAMES.FONT,
+    OPTION_NAMES.WEBSOCKET,
+    OPTION_NAMES.OTHER,
+    OPTION_NAMES.PING
+]);
+/**
+ * Modifier names that are compatible with `$removeheader`.
+ * Ported from tsurlfilter's `RemoveHeaderCompatibleOptions`.
+ */ const REMOVEHEADER_COMPATIBLE_MODIFIERS = new Set([
+    OPTION_NAMES.REMOVEHEADER,
+    OPTION_NAMES.HEADER,
+    OPTION_NAMES.THIRD_PARTY,
+    OPTION_NAMES.IMPORTANT,
+    OPTION_NAMES.MATCH_CASE,
+    OPTION_NAMES.BADFILTER,
+    OPTION_NAMES.SCRIPT,
+    OPTION_NAMES.STYLESHEET,
+    OPTION_NAMES.SUBDOCUMENT,
+    OPTION_NAMES.OBJECT,
+    OPTION_NAMES.IMAGE,
+    OPTION_NAMES.XMLHTTPREQUEST,
+    OPTION_NAMES.MEDIA,
+    OPTION_NAMES.FONT,
+    OPTION_NAMES.WEBSOCKET,
+    OPTION_NAMES.OTHER,
+    OPTION_NAMES.PING
+]);
+/**
+ * Parsed and normalized network filtering rule.
+ *
+ * Instances are created exclusively via the static factory methods
+ * {@link Rule.createFromText} and {@link Rule.parseFromNode}.
+ */ class Rule {
+    /**
+     * Checks if the specified modifier is enabled on the rule.
+     *
+     * @param modifier Canonical modifier name (e.g. `"redirect"`, `"script"`).
+     *
+     * @returns `true` if the modifier is enabled.
+     */ isModifierEnabled(modifier) {
+        return this.enabledModifiers.has(modifier);
+    }
+    /**
+     * Checks if the specified modifier is disabled (negated) on the rule.
+     *
+     * @param modifier Canonical modifier name.
+     *
+     * @returns `true` if the modifier is disabled.
+     */ isModifierDisabled(modifier) {
+        return this.disabledModifiers.has(modifier);
+    }
+    /**
+     * Returns `true` if one and only the specified modifier is enabled.
+     *
+     * @param modifier Canonical modifier name.
+     *
+     * @returns `true` if the modifier is the only enabled modifier.
+     */ isSingleModifierEnabled(modifier) {
+        return this.enabledModifiers.size === 1 && this.enabledModifiers.has(modifier);
+    }
+    /**
+     * Checks if the rule completely disables filtering (elemhide + content +
+     * urlblock + jsinject all enabled on an allowlist rule).
+     *
+     * @returns `true` if the rule disables all filtering.
+     */ isFilteringDisabled() {
+        if (!this.allowlist) {
+            return false;
+        }
+        return this.enabledModifiers.has(OPTION_NAMES.ELEMHIDE) && this.enabledModifiers.has(OPTION_NAMES.CONTENT) && this.enabledModifiers.has(OPTION_NAMES.URLBLOCK) && this.enabledModifiers.has(OPTION_NAMES.JSINJECT);
+    }
+    /**
+     * Checks if the rule pattern is a regular expression.
+     *
+     * @returns `true` if the rule pattern is a regex.
+     */ isRegexRule() {
+        return this.pattern.startsWith(MASK_REGEX_RULE) && this.pattern.endsWith(MASK_REGEX_RULE);
+    }
+    /**
+     * Returns the rule text generated from the AST node.
+     *
+     * @returns Rule text string.
+     */ getText() {
+        return RuleGenerator.generate(this.node);
+    }
+    /**
+     * Gets a hash for the full text of the rule. Needed to keep the ID of the
+     * rule in the filter stable between runs (for CWS "skip review").
+     *
+     * @param salt Optional numeric salt for uniqueness.
+     *
+     * @returns Hash value in range [0, 2^31-1].
+     */ getTextHash(salt) {
+        const text = this.getText();
+        const trialText = salt === undefined ? text : `${text}\0${salt}`;
+        return fastHash31(trialText);
+    }
+    /**
+     * Returns the applicable header name for `$removeheader`, or `null`
+     * if the direction doesn't match or no valid header is set.
+     *
+     * @param isRequestHeaders `true` for request headers, `false` for response.
+     *
+     * @returns Header name or `null`.
+     */ getApplicableHeaderName(isRequestHeaders) {
+        if (!this.removeHeaderName) {
+            return null;
+        }
+        if (isRequestHeaders !== this.removeHeaderIsRequestType) {
+            return null;
+        }
+        return this.removeHeaderName;
+    }
+    /**
+     * Checks whether this rule (which must carry `$badfilter`) negates
+     * `targetRule`. Delegates to {@link RuleBadfilter.negates}.
+     *
+     * @param targetRule The rule to test for negation.
+     *
+     * @returns `true` if this rule negates `targetRule`.
+     */ negatesBadfilter(targetRule) {
+        return RuleBadfilter.negates(this, targetRule);
+    }
+    /**
+     * Determines the effective header name and direction for a
+     * `$removeheader` value.
+     *
+     * @param value Raw modifier value (may be empty for allowlist rules).
+     *
+     * @returns `name` — effective header name, or `null` when
+     *   forbidden/unsupported; `isRequest` — `true` when targeting request
+     *   headers.
+     */ static computeRemoveHeaderInfo(value) {
+        const lowerValue = value.toLowerCase();
+        const isRequest = lowerValue.startsWith(REMOVE_HEADER_REQUEST_PREFIX);
+        const rawHeaderName = isRequest ? lowerValue.slice(REMOVE_HEADER_REQUEST_PREFIX.length) : lowerValue;
+        const headerName = rawHeaderName.trim();
+        const isValid = headerName.length > 0 && !FORBIDDEN_REMOVE_HEADERS.has(headerName) && !headerName.includes(':');
+        return {
+            name: isValid ? headerName : null,
+            isRequest
+        };
+    }
+    /**
+     * Parses a pipe-separated domain list, keeping `/regex/` tokens intact
+     * (so `|` inside a regexp is not treated as a domain separator).
+     *
+     * @param value Raw `$domain` / `$to` / `$denyallow` modifier value.
+     *
+     * @returns Permitted and restricted domain lists.
+     */ static parseDomainList(value) {
+        const permitted = [];
+        const restricted = [];
+        const node = DomainListParser.parse(value, undefined, 0, DOMAIN_LIST_PIPE_SEPARATOR);
+        for (const { exception, value: domain } of node.children){
+            if (!domain) {
+                continue;
+            }
+            if (exception) {
+                restricted.push(domain);
+            } else {
+                permitted.push(domain);
+            }
+        }
+        return {
+            permitted,
+            restricted
+        };
+    }
+    /**
+     * Parses the `$header` modifier value into an {@link HttpHeaderMatcher}.
+     *
+     * Expected format: `<header-name>` or `<header-name>:<value-or-/regex/>`.
+     *
+     * @param value Raw modifier value string.
+     *
+     * @returns Parsed header matcher.
+     */ static parseHeaderModifier(value) {
+        const colonIdx = value.indexOf(':');
+        if (colonIdx === -1) {
+            return {
+                header: value,
+                value: null,
+                isRegExp: false
+            };
+        }
+        const header = value.slice(0, colonIdx);
+        const rawValue = value.slice(colonIdx + 1);
+        if (rawValue.startsWith('/') && rawValue.endsWith('/')) {
+            return {
+                header,
+                value: rawValue.slice(1, -1),
+                isRegExp: true
+            };
+        }
+        return {
+            header,
+            value: rawValue,
+            isRegExp: false
+        };
+    }
+    /**
+     * Checks if a network rule node is too general to be useful (no modifiers
+     * and pattern shorter than 4 characters).
+     *
+     * @param node Network rule AST node.
+     *
+     * @returns `true` if the rule is too general.
+     */ static isTooGeneral(node) {
+        return !node.modifiers?.children?.length && node.pattern.value.length < 4;
+    }
+    /**
+     * Parses and converts rule text to AG syntax, then creates
+     * {@link Rule} instances from all resulting network-rule nodes.
+     *
+     * @param filterId Filter list ID.
+     * @param ruleIndex Rule index within the filter list.
+     * @param text Raw rule text.
+     *
+     * @returns Array of {@link Rule} parsed from `text`.
+     *
+     * @throws `Error` when parsing or conversion fails.
+     */ static createFromText(filterId, ruleIndex, text) {
+        let rulesConvertedToAGSyntax;
+        try {
+            const node = RuleParser.parse(text);
+            const conversionResult = RuleConverter.convertToAdg(node);
+            if (conversionResult.isConverted) {
+                rulesConvertedToAGSyntax = conversionResult.result;
+            } else {
+                rulesConvertedToAGSyntax = [
+                    node
+                ];
+            }
+        } catch (e) {
+            throw new Error(// eslint-disable-next-line max-len
+            `Unknown error during conversion rule to AG syntax: ${getErrorMessage(e)}`);
+        }
+        const rules = [];
+        for(let i = 0; i < rulesConvertedToAGSyntax.length; i += 1){
+            const ruleNode = rulesConvertedToAGSyntax[i];
+            if (ruleNode.category !== RuleCategory.Network || ruleNode.type !== NetworkRuleType.NetworkRule) {
+                continue;
+            }
+            try {
+                rules.push(new Rule(filterId, ruleIndex, ruleNode));
+            } catch (e) {
+                throw new Error(// eslint-disable-next-line max-len
+                `Cannot create Rule from filter "${filterId}" and rule "${text}": ${getErrorMessage(e)}`);
+            }
+        }
+        return rules;
+    }
+    /**
+     * Converts an already-parsed rule node to AG syntax and creates
+     * {@link Rule} instances from all resulting network-rule nodes.
+     *
+     * @param filterListId Filter list ID.
+     * @param index Rule index within the filter list.
+     * @param node Rule AST node.
+     *
+     * @returns Array of {@link Rule} parsed from `node`.
+     *
+     * @throws `Error` when conversion to AG syntax fails.
+     * @throws `SyntaxError` when the rule has spaces in pattern or is too
+     *   general.
+     */ static parseFromNode(filterListId, index, node) {
+        let rulesConvertedToAG;
+        try {
+            const conversionResult = RuleConverter.convertToAdg(node);
+            if (conversionResult.isConverted) {
+                rulesConvertedToAG = conversionResult.result;
+            } else {
+                rulesConvertedToAG = [
+                    node
+                ];
+            }
+        } catch (e) {
+            throw new Error(// eslint-disable-next-line max-len
+            `Unknown error during conversion rule to AG syntax: ${getErrorMessage(e)}`);
+        }
+        const rules = [];
+        for(let i = 0; i < rulesConvertedToAG.length; i += 1){
+            const ruleNode = rulesConvertedToAG[i];
+            if (ruleNode.category !== RuleCategory.Network || ruleNode.type !== NetworkRuleType.NetworkRule) {
+                continue;
+            }
+            try {
+                rules.push(new Rule(filterListId, index, ruleNode));
+            } catch (e) {
+                let msg = `"${getErrorMessage(e)}" in the rule: `;
+                try {
+                    msg += `"${RuleGenerator.generate(node)}"`;
+                } catch (generateError) {
+                    msg += `"${JSON.stringify(node)}" `;
+                    msg += `(generate error: ${getErrorMessage(generateError)})`;
+                }
+                throw new Error(msg);
+            }
+        }
+        return rules;
+    }
+    /**
+     * Creates a new {@link Rule} from filter list metadata and an already-converted
+     * network rule AST node.
+     *
+     * @param filterListId Filter list ID.
+     * @param index Rule index within the filter list.
+     * @param node Network rule AST node (must already be in AG syntax).
+     *
+     * @throws `SyntaxError` when the pattern contains spaces, the rule is too
+     *   general, or any modifier is invalid.
+     */ constructor(filterListId, index, node){
+        /**
+     * Set of canonical modifier names that are enabled on this rule.
+     *
+     * Content-type modifiers (script, image, etc.) are tracked here
+     * **in addition to** being mapped to {@link permittedResourceTypes}.
+     */ this.enabledModifiers = new Set();
+        /**
+     * Set of canonical modifier names that are disabled (negated) on
+     * this rule. E.g. `~third-party` → `"third-party"` in this set.
+     */ this.disabledModifiers = new Set();
+        /**
+     * Permitted (non-negated) domains from the `$domain` modifier.
+     */ this.permittedDomains = null;
+        /**
+     * Restricted (negated) domains from the `$domain` modifier.
+     */ this.restrictedDomains = null;
+        /**
+     * Permitted destination domains from the `$to` modifier.
+     */ this.permittedToDomains = null;
+        /**
+     * Restricted destination domains from the `$to` modifier.
+     */ this.restrictedToDomains = null;
+        /**
+     * Exception domains from the `$denyallow` modifier.
+     */ this.denyAllowDomains = null;
+        /**
+     * Permitted HTTP methods from the `$method` modifier.
+     */ this.permittedMethods = null;
+        /**
+     * Restricted HTTP methods from the `$method` modifier.
+     */ this.restrictedMethods = null;
+        /**
+     * Name of the advanced modifier (e.g. `"csp"`, `"redirect"`,
+     * `"removeparam"`, `"removeheader"`, `"cookie"`, `"permissions"`).
+     */ this.advancedModifierName = null;
+        /**
+     * Raw string value of the advanced modifier.
+     *
+     * `null` when the modifier has no value. The only exception is
+     * `$removeparam`: a value-less `$removeparam` is stored as `''`, because
+     * it carries a meaning of its own ("remove all query parameters") that
+     * must be distinguishable from "no value".
+     */ this.advancedModifierValue = null;
+        /**
+     * Parsed data for the `$header` modifier.
+     */ this.headerMatcher = null;
+        /**
+     * Effective header name to be removed by `$removeheader`.
+     * `null` when no valid `$removeheader` modifier is present.
+     */ this.removeHeaderName = null;
+        /**
+     * Whether the `$removeheader` modifier targets request headers
+     * (true) or response headers (false).
+     */ this.removeHeaderIsRequestType = false;
+        /**
+     * Whether the rule uses `$redirect-rule` (only redirects
+     * already-blocked requests) vs plain `$redirect`.
+     */ this.isRedirectRuleModifier = false;
+        const pattern = node.pattern.value;
+        if (pattern && hasSpaces(pattern)) {
+            throw new SyntaxError('Rule has spaces, seems to be a host rule');
+        }
+        if (Rule.isTooGeneral(node)) {
+            throw new SyntaxError(`Rule is too general: ${RuleGenerator.generate(node)}`);
+        }
+        const isAllowlist = node.exception;
+        const permittedResourceTypesSet = new Set();
+        const restrictedResourceTypesSet = new Set();
+        const meta = {
+            baseModifierCount: 0,
+            permittedContentTypeCount: 0,
+            permittedMethodCount: 0,
+            hasHeader: false,
+            permittedDomainCount: 0,
+            hasRedirect: false,
+            specificExclusionCount: 0,
+            hasImportant: false
+        };
+        let hasRestrictedContentType = false;
+        for (const modifier of node.modifiers?.children ?? []){
+            const rawName = modifier.name.value;
+            const exception = modifier.exception ?? false;
+            const value = modifier.value?.value ?? '';
+            const name = rawName;
+            // A noop modifier consists only of underscores and does not affect the rule.
+            if (name.startsWith(OPTION_NAMES.NOOP) && !name.split(OPTION_NAMES.NOOP).some((part)=>!!part)) {
+                continue;
+            }
+            if (exception && !NEGATABLE_MODIFIERS.has(name)) {
+                throw new SyntaxError(`Modifier $${name} cannot be negated`);
+            }
+            switch(name){
+                case OPTION_NAMES.FIRST_PARTY:
+                    // $first-party is an alias for ~$third-party.
+                    // Normalize it into the same internal representation so that
+                    // RegularRuleConverter.getCondition() can derive DomainType.FirstParty
+                    // from isModifierDisabled(THIRD_PARTY) uniformly.
+                    if (exception) {
+                        // ~$first-party ≡ $third-party
+                        this.enabledModifiers.add(OPTION_NAMES.THIRD_PARTY);
+                    } else {
+                        // $first-party ≡ ~$third-party
+                        this.disabledModifiers.add(OPTION_NAMES.THIRD_PARTY);
+                    }
+                    meta.baseModifierCount += 1;
+                    break;
+                case OPTION_NAMES.THIRD_PARTY:
+                    if (exception) {
+                        this.disabledModifiers.add(name);
+                    } else {
+                        this.enabledModifiers.add(name);
+                    }
+                    meta.baseModifierCount += 1;
+                    break;
+                case OPTION_NAMES.MATCH_CASE:
+                    if (exception) {
+                        this.disabledModifiers.add(name);
+                    } else {
+                        this.enabledModifiers.add(name);
+                    }
+                    meta.baseModifierCount += 1;
+                    break;
+                case OPTION_NAMES.IMPORTANT:
+                    this.enabledModifiers.add(name);
+                    meta.hasImportant = true;
+                    break;
+                case OPTION_NAMES.BADFILTER:
+                case OPTION_NAMES.POPUP:
+                    this.enabledModifiers.add(name);
+                    break;
+                case OPTION_NAMES.STEALTH:
+                    if (!isAllowlist) {
+                        throw new SyntaxError('Modifier $stealth is only allowed on allowlist rules');
+                    }
+                    this.enabledModifiers.add(name);
+                    break;
+                case OPTION_NAMES.DOCUMENT:
+                    if (exception) {
+                        this.disabledModifiers.add(name);
+                        restrictedResourceTypesSet.add(ResourceType.MainFrame);
+                        hasRestrictedContentType = true;
+                    } else {
+                        this.enabledModifiers.add(name);
+                        permittedResourceTypesSet.add(ResourceType.MainFrame);
+                        if (isAllowlist) {
+                            this.enabledModifiers.add(OPTION_NAMES.ELEMHIDE);
+                            this.enabledModifiers.add(OPTION_NAMES.JSINJECT);
+                            this.enabledModifiers.add(OPTION_NAMES.URLBLOCK);
+                            this.enabledModifiers.add(OPTION_NAMES.CONTENT);
+                            meta.specificExclusionCount += 4;
+                        }
+                    }
+                    break;
+                case OPTION_NAMES.ELEMHIDE:
+                case OPTION_NAMES.GENERICHIDE:
+                case OPTION_NAMES.SPECIFICHIDE:
+                case OPTION_NAMES.CONTENT:
+                case OPTION_NAMES.URLBLOCK:
+                case OPTION_NAMES.GENERICBLOCK:
+                case OPTION_NAMES.JSINJECT:
+                    if (exception) {
+                        this.disabledModifiers.add(name);
+                    } else {
+                        if (!isAllowlist) {
+                            throw new SyntaxError(`Modifier $${name} is only allowed on allowlist rules`);
+                        }
+                        this.enabledModifiers.add(name);
+                        permittedResourceTypesSet.add(ResourceType.MainFrame);
+                        permittedResourceTypesSet.add(ResourceType.SubFrame);
+                        meta.specificExclusionCount += 1;
+                    }
+                    break;
+                case OPTION_NAMES.EXTENSION:
+                    if (exception) {
+                        this.disabledModifiers.add(name);
+                    } else {
+                        if (!isAllowlist) {
+                            throw new SyntaxError(`Modifier $${name} is only allowed on allowlist rules`);
+                        }
+                        this.enabledModifiers.add(name);
+                        meta.specificExclusionCount += 1;
+                    }
+                    break;
+                case OPTION_NAMES.SCRIPT:
+                case OPTION_NAMES.STYLESHEET:
+                case OPTION_NAMES.SUBDOCUMENT:
+                case OPTION_NAMES.OBJECT:
+                case OPTION_NAMES.IMAGE:
+                case OPTION_NAMES.XMLHTTPREQUEST:
+                case OPTION_NAMES.MEDIA:
+                case OPTION_NAMES.FONT:
+                case OPTION_NAMES.WEBSOCKET:
+                case OPTION_NAMES.OTHER:
+                case OPTION_NAMES.PING:
+                    {
+                        const rt = CONTENT_TYPE_RESOURCE_TYPE_MAP[name];
+                        if (exception) {
+                            this.disabledModifiers.add(name);
+                            if (rt !== undefined) {
+                                restrictedResourceTypesSet.add(rt);
+                                hasRestrictedContentType = true;
+                            }
+                        } else {
+                            this.enabledModifiers.add(name);
+                            if (rt !== undefined) {
+                                permittedResourceTypesSet.add(rt);
+                            }
+                        }
+                        break;
+                    }
+                case OPTION_NAMES.DOMAIN:
+                    {
+                        const { permitted, restricted } = Rule.parseDomainList(value);
+                        if (permitted.length > 0) {
+                            this.permittedDomains = permitted;
+                            meta.permittedDomainCount = permitted.length;
+                        }
+                        if (restricted.length > 0) {
+                            this.restrictedDomains = restricted;
+                            meta.baseModifierCount += 1;
+                        }
+                        break;
+                    }
+                case OPTION_NAMES.DENYALLOW:
+                    {
+                        const { permitted, restricted } = Rule.parseDomainList(value);
+                        if (restricted.length > 0) {
+                            throw new SyntaxError('modifier $denyallow domains cannot be negated');
+                        }
+                        if (permitted.length > 0) {
+                            this.denyAllowDomains = permitted;
+                            meta.baseModifierCount += 1;
+                        }
+                        break;
+                    }
+                case OPTION_NAMES.TO:
+                    {
+                        const { permitted, restricted } = Rule.parseDomainList(value);
+                        if (permitted.length > 0) {
+                            this.permittedToDomains = permitted;
+                        }
+                        if (restricted.length > 0) {
+                            this.restrictedToDomains = restricted;
+                        }
+                        meta.baseModifierCount += 1;
+                        break;
+                    }
+                case OPTION_NAMES.METHOD:
+                    {
+                        const parts = value.split('|').filter(Boolean);
+                        const methodPermitted = [];
+                        const methodRestricted = [];
+                        for (const part of parts){
+                            const isNegated = part.startsWith('~');
+                            const methodName = (isNegated ? part.slice(1) : part).toLowerCase();
+                            // Unknown methods (e.g. 'trace') are kept and rejected later by the validator.
+                            if (isNegated) {
+                                methodRestricted.push(methodName);
+                            } else {
+                                methodPermitted.push(methodName);
+                            }
+                        }
+                        this.enabledModifiers.add(name);
+                        if (methodPermitted.length > 0) {
+                            this.permittedMethods = methodPermitted;
+                            meta.permittedMethodCount = methodPermitted.length;
+                        }
+                        if (methodRestricted.length > 0) {
+                            this.restrictedMethods = methodRestricted;
+                            meta.baseModifierCount += 1;
+                        }
+                        break;
+                    }
+                case OPTION_NAMES.HEADER:
+                    this.enabledModifiers.add(name);
+                    this.headerMatcher = Rule.parseHeaderModifier(value);
+                    meta.hasHeader = true;
+                    break;
+                case OPTION_NAMES.REMOVEPARAM:
+                    this.enabledModifiers.add(name);
+                    this.advancedModifierName = rawName;
+                    // Keep an empty value as `''` instead of collapsing it to
+                    // `null`: a value-less `$removeparam` means "remove all
+                    // query parameters", and the converter relies on this
+                    // distinction — otherwise such a rule silently degrades
+                    // into a plain blocking rule.
+                    // See https://github.com/AdguardTeam/AdguardBrowserExtension/issues/3602.
+                    this.advancedModifierValue = value;
+                    break;
+                case OPTION_NAMES.CSP:
+                case OPTION_NAMES.COOKIE:
+                case OPTION_NAMES.REPLACE:
+                case OPTION_NAMES.JSONPRUNE:
+                case OPTION_NAMES.XMLPRUNE:
+                case OPTION_NAMES.HLS:
+                case OPTION_NAMES.REFERRERPOLICY:
+                case OPTION_NAMES.PERMISSIONS:
+                case OPTION_NAMES.URLTRANSFORM:
+                    this.enabledModifiers.add(name);
+                    this.advancedModifierName = rawName;
+                    this.advancedModifierValue = value || null;
+                    break;
+                case OPTION_NAMES.REDIRECTRULE:
+                case OPTION_NAMES.REDIRECT:
+                    this.enabledModifiers.add(OPTION_NAMES.REDIRECT);
+                    this.advancedModifierName = name;
+                    this.advancedModifierValue = value || null;
+                    this.isRedirectRuleModifier = name === OPTION_NAMES.REDIRECTRULE;
+                    meta.hasRedirect = true;
+                    break;
+                case OPTION_NAMES.REMOVEHEADER:
+                    {
+                        this.enabledModifiers.add(name);
+                        this.advancedModifierName = rawName;
+                        this.advancedModifierValue = value || null;
+                        const info = Rule.computeRemoveHeaderInfo(value);
+                        this.removeHeaderName = info.name;
+                        this.removeHeaderIsRequestType = info.isRequest;
+                        break;
+                    }
+                case OPTION_NAMES.DNSREWRITE:
+                    this.enabledModifiers.add(name);
+                    this.advancedModifierName = rawName;
+                    this.advancedModifierValue = value || null;
+                    meta.baseModifierCount += 1;
+                    break;
+                // Known unsupported modifiers — no DNR equivalent.
+                // Still added to enabledModifiers so the validator can reject them.
+                case OPTION_NAMES.WEBRTC:
+                case OPTION_NAMES.DNSTYPE:
+                case OPTION_NAMES.CTAG:
+                case OPTION_NAMES.CLIENT:
+                case OPTION_NAMES.APP:
+                case OPTION_NAMES.NETWORK:
+                    this.enabledModifiers.add(name);
+                    break;
+                case OPTION_NAMES.ALL:
+                    if (isAllowlist) {
+                        throw new SyntaxError('Modifier $all is not allowed on allowlist rules');
+                    }
+                    for (const rt of Object.values(ResourceType)){
+                        permittedResourceTypesSet.add(rt);
+                    }
+                    this.enabledModifiers.add(OPTION_NAMES.POPUP);
+                    break;
+                default:
+                    {
+                        const modifierView = [
+                            rawName,
+                            value
+                        ].filter((part)=>part).join('=');
+                        // Unknown modifiers must invalidate the entire rule.
+                        // RulesScanner catches this error and records it in the conversion result.
+                        throw new SyntaxError(`Unknown modifier: ${modifierView}`);
+                    }
+            }
+        }
+        if (this.denyAllowDomains !== null && this.permittedToDomains !== null) {
+            throw new SyntaxError('Modifiers $denyallow and $to cannot be used together');
+        }
+        // Validate modifier combinations (ported from tsurlfilter).
+        if (this.enabledModifiers.has(OPTION_NAMES.REMOVEPARAM)) {
+            for (const modifier of this.enabledModifiers){
+                if (!REMOVEPARAM_COMPATIBLE_MODIFIERS.has(modifier)) {
+                    throw new SyntaxError(`$removeparam is not compatible with $${modifier}`);
+                }
+            }
+        }
+        if (this.enabledModifiers.has(OPTION_NAMES.PERMISSIONS)) {
+            for (const modifier of this.enabledModifiers){
+                if (!PERMISSIONS_COMPATIBLE_MODIFIERS.has(modifier)) {
+                    throw new SyntaxError(`$permissions is not compatible with $${modifier}`);
+                }
+            }
+        }
+        if (this.enabledModifiers.has(OPTION_NAMES.HEADER)) {
+            for (const modifier of this.enabledModifiers){
+                if (!HEADER_COMPATIBLE_MODIFIERS.has(modifier)) {
+                    throw new SyntaxError(`$header is not compatible with $${modifier}`);
+                }
+            }
+            if (this.removeHeaderIsRequestType) {
+                throw new SyntaxError('Request-side $removeheader is not compatible with $header');
+            }
+        }
+        if (hasRestrictedContentType || restrictedResourceTypesSet.size > 0) {
+            meta.baseModifierCount += 1;
+        }
+        meta.permittedContentTypeCount = permittedResourceTypesSet.size;
+        this.filterListId = filterListId;
+        this.index = index;
+        this.node = node;
+        this.pattern = pattern;
+        this.hash = fastHash(pattern);
+        this.allowlist = isAllowlist;
+        this.priority = RulePriority.calculate(meta, isAllowlist);
+        this.permittedResourceTypes = [
+            ...permittedResourceTypesSet
+        ];
+        this.restrictedResourceTypes = [
+            ...restrictedResourceTypesSet
+        ];
+    }
+}
+
+export { MASK_REGEX_RULE, REMOVEHEADER_COMPATIBLE_MODIFIERS, Rule };

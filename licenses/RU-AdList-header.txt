@@ -1,0 +1,45 @@
+[Adblock Plus 2.0]
+! Checksum: 28KAtaOYr5KqkqmBHiaQsA
+! Version: 202610311111
+! Title: RU, UA, UZ, KZ
+! Last modified: 31 Oct 2026 11:11 UTC
+! Expires: 1 days (фильтр обновляется автоматически каждые 2 дня)
+! Homepage: https://forums.lanik.us/viewforum.php?f=102
+!
+!
+! *** ruadlist:advblock.txt ***
+!
+! Дополнительный региональный фильтр RU AdList к фильтру EasyList
+! Лицензия CC-BY: http://creativecommons.org/licenses/by/3.0/
+! Проект создал Akuma (DemonSat) на основе списка фильтров denis-ovs.narod.ru.
+! Список содержит фрагменты списков MORPEH'а и Fanboy'я, результаты изучения
+! содержимого подписки UA-IX Banlist и некоторые правила из
+! Reek's Anti-Adblock Killer (https://github.com/reek/anti-adblock-killer)
+! В разное время над списком фильтров работали: denis-ovs, Akuma, Radik245.
+! На данный момент над списком работают Lain_13 и dimisa.
+!
+! Если на вашем любимом сайте осталась реклама или фильтр создаёт проблемы
+! в его работе, то свяжитесь с нами:
+! https://forums.lanik.us/viewforum.php?f=102
+!
+! = Сайты-попапы (самостоятельно открываются в новом окне) ====================
+! *** advblock/popup.txt ***
+! - Частные правила -----------------------------------------------------------
+$popup,domain=176.114.0.126|176.114.0.132|37.220.36.15|assiatv.com|cdnpotok.com|cdntvpotok.com|freescreens.ru|imgbase.ru|imgcach.ru|imgclick.ru|kolikbolik.top|oneliketv.com|payforpic.ru|picclick.ru|picclock.ru|picforall.ru|protonvideo.to|telecdn.net|tv-assia.org
+&utm_campaign=$popup,domain=itc.ua|sc2tv.ru|www.film.ru
+/*utm_$popup,domain=stratege.ru
+/go.php$popup,domain=piratca.net
+/redirect/cpa/*$popup,domain=rt02.ru
+?partner=$popup,domain=lifehacker.ru
+|http://li.ru/go?$popup,domain=fishki.net
+||aviasales.ru/?marker=$popup
+||betboom.ru/welcome?utm_$third-party,popup
+||catcut.net^$popup,domain=mobile-4at-obshenie.chatovod.ru|mobile-chat-obshenie.jimdo.com
+||clck.ru^$popup,domain=playground.ru
+||com/?id=*&t=direct^$popup
+||fon.bet/promo/$popup
+||gemius.pl^$popup,domain=terrikon.com
+||getitbit.net/ads/$popup
+||goo.gl^$popup,domain=gamegpu.com|vsofte.biz
+||joker.win/*&offer_id=$popup
+||m.acestream.*/plan/select?popup=noads$popup

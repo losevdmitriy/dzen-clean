@@ -1,0 +1,36 @@
+:root {color-scheme: light; font: 13px/1.45 "Segoe UI", sans-serif; color:#183b33; background:#f6f8f4}
+* {box-sizing:border-box}
+body {width:400px; margin:0; max-height:620px; overflow-y:auto}
+header {display:flex; gap:12px; align-items:center; padding:22px 20px 18px}
+h1 {font-size:21px; line-height:1.2; margin:0 0 3px; letter-spacing:-.5px}
+p {margin:0}
+header p {font-size:11px; color:#68786e}
+main {padding:0 16px}
+label {display:flex; align-items:center; gap:14px; justify-content:space-between; cursor:pointer; padding:13px 12px}
+.master {background:#e2eee5; border-radius:12px; font-weight:600}
+.options {margin-top:10px; background:white; border:1px solid #e2e8e0; border-radius:12px}
+.options label + label {border-top:1px solid #edf0e9}
+small {display:block; color:#728077; font-size:10px; margin-top:2px}
+input {accent-color:#19745c; width:17px; height:17px; flex-shrink:0; cursor:pointer}
+input:disabled {cursor:wait}
+#stats {margin:14px 4px 4px; color:#68786e; font-size:11px}
+#status {min-height:36px; margin:4px; font-size:11px; color:#19745c}
+#status.error {color:#a13535}
+button {width:100%; border:0; background:#19745c; color:#fff; border-radius:9px; padding:10px; font:600 12px "Segoe UI",sans-serif; cursor:pointer}
+button:hover {background:#125b48}
+button:disabled {opacity:.5; cursor:default}
+:focus-visible {outline:2px solid #c98624; outline-offset:3px}
+footer {padding:14px 20px; color:#829084; font-size:10px; text-align:center}
+sup {font-size:10px;color:#728077;vertical-align:middle;letter-spacing:0}
+select,input[type="text"] {width:100%;border:1px solid #d8e1d6;border-radius:7px;padding:8px;background:#fff;color:#183b33;font:12px "Segoe UI",sans-serif}
+.profile select {width:210px}.profile{padding-bottom:3px}
+#profile-note {font-size:11px;color:#728077;margin:4px 12px 12px}
+details {margin-top:12px;border:1px solid #e2e8e0;border-radius:10px;background:#fff;padding:10px}
+summary {cursor:pointer;font-weight:600;font-size:12px}details p {font-size:11px;color:#728077;margin-top:8px}
+details label {font-size:11px;padding:8px 0}details label[for] {display:block}
+details button {margin-top:8px}.actions {display:flex;gap:7px;margin-top:8px}
+#filters {font-size:11px;color:#68786e;margin:12px 4px 4px;overflow-wrap:anywhere}
+.secondary {background:#e7eee4;color:#245243}.secondary:hover{background:#dce7d8}
+#diagnostics {margin-top:8px}
+.exception {display:flex;gap:6px;align-items:center;margin-top:8px}.exception code{font-size:10px;overflow-wrap:anywhere;flex:1}.exception button{width:auto;margin:0;padding:5px}
+.protection{padding:20px 14px;background:#e2eee5;border-radius:14px;margin-bottom:14px}.protection h2{font-size:21px;margin:0 0 6px}.protection p{color:#68786e;overflow-wrap:anywhere}#toggle-site,#list-blocks{font-size:15px;padding:14px;margin-bottom:8px}#restore-panel{border:1px solid #d8e1d6;padding:12px;border-radius:10px}#restore-panel small{margin-top:8px}#status{font-size:12px;margin:8px 4px 12px;min-height:32px}input[type="text"]{height:34px;cursor:text}body{max-height:620px}#advanced>label{padding:10px 0}

@@ -1,0 +1,6 @@
+import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';import {collect,zip} from './zip-helper.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'),'utf8'));
+const dirs=new Set(['icons','experimental','engine-filters','resources','web-accessible-resources','licenses','src','third-party']);
+const roots=new Set(['manifest.json','background.js','background.js.LEGAL.txt','general.js','general.js.LEGAL.txt','settings.js','filters.js','content.js','early.js','early.css','popup.html','popup.css','popup.js','LICENSE','THIRD_PARTY.md','PRIVACY.md','privacy.html','EULA.txt','updater.js','README-store.txt']);
+const files=collect(root).filter(x=>{const [top]=x.name.split('/');return !/(?:^|\/)(?:node_modules|_metadata|\.git)(?:\/|$)/.test(x.name)&&!x.name.startsWith('_')&&!/\.(?:pem|key|crx|zip|tgz)$/i.test(x.name)&&(roots.has(x.name)||dirs.has(top)||x.name==='data/bundled-rules.json');});
+const outArg=process.argv.indexOf('--out');const out=path.resolve(outArg>=0?process.argv[outArg+1]:`dzen-clean-opera-${manifest.version}.zip`);console.log(JSON.stringify({out,...zip(files,out)}));

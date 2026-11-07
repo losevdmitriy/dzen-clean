@@ -1,0 +1,199 @@
+var name = "@adguard/tswebextension";
+var description = "This is a TypeScript library that implements AdGuard's extension API";
+var type = "module";
+var main = "dist/index.js";
+var typings = "dist/types/src/lib/mv2/background/index.d.ts";
+var sideEffects = [
+	"dist/assistant-inject.js",
+	"dist/content-script.js",
+	"dist/content-script.mv3.js",
+	"dist/gpc.mv3.js",
+	"dist/hide-document-referrer.mv3.js"
+];
+var exports$1 = {
+	".": {
+		types: "./dist/types/index.d.ts",
+		"default": "./dist/index.js"
+	},
+	"./mv3": {
+		types: "./dist/types/index.mv3.d.ts",
+		"default": "./dist/index.mv3.js"
+	},
+	"./mv3/utils": {
+		types: "./dist/types/mv3-utils.d.ts",
+		"default": "./dist/mv3-utils.js"
+	},
+	"./mv3/gpc": {
+		"default": "./dist/gpc.mv3.js"
+	},
+	"./mv3/hide-document-referrer": {
+		"default": "./dist/hide-document-referrer.mv3.js"
+	},
+	"./mv3/content-script": {
+		"default": "./dist/content-script.mv3.js"
+	},
+	"./content-script": {
+		types: "./dist/types/content-script.d.ts",
+		"default": "./dist/content-script.js"
+	},
+	"./content-script/css-hits-counter": {
+		types: "./dist/types/css-hits-counter.d.ts",
+		"default": "./dist/css-hits-counter.js"
+	},
+	"./cli": {
+		types: "./dist/types/cli.d.ts",
+		"default": "./dist/cli.js"
+	},
+	"./assistant-inject": {
+		types: "./dist/types/assistant-inject.d.ts",
+		"default": "./dist/assistant-inject.js"
+	},
+	"./filters-storage": {
+		types: "./dist/types/filters-storage.d.ts",
+		"default": "./dist/filters-storage.js"
+	}
+};
+var bin = {
+	tswebextension: "dist/cli.js"
+};
+var files = [
+	"dist"
+];
+var author = "Adguard Software Ltd.";
+var repository = {
+	type: "git",
+	url: "git+https://github.com/AdGuardSoftwareLimited/ext-tsurlfilter.git",
+	directory: "packages/tswebextension"
+};
+var license = "GPL-3.0-only";
+var engines = {
+	node: ">=22"
+};
+var bugs = {
+	url: "https://github.com/AdguardTeam/tsurlfilter/issues"
+};
+var homepage = "https://github.com/AdguardTeam/tsurlfilter/tree/master/packages/tswebextension#readme";
+var scripts = {
+	lint: "pnpm lint:code && pnpm lint:types && pnpm lint:md",
+	"lint:code": "eslint --cache .",
+	"lint:types": "tsc",
+	"lint:md": "markdownlint .",
+	prebuild: "rimraf dist",
+	build: "pnpm prebuild && pnpm build:types && rollup -c rollup.config.ts --configPlugin @rollup/plugin-swc",
+	"build:types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --outdir dist/types && tsx tasks/transform-dts.ts",
+	"update:companiesdb": "tsx tasks/update-companiesdb.ts",
+	start: "rollup -c rollup.config.ts --configPlugin @rollup/plugin-swc -w",
+	test: "vitest run",
+	"test:ci": "vitest run --no-cache --reporter default --reporter junit --outputFile=./tests-reports/tswebextension.xml",
+	"test:mv2": "vitest run --project mv2",
+	"test:mv3": "vitest run --project mv3",
+	"test:common": "vitest run --project common",
+	"test:coverage": "vitest run --coverage",
+	"test:smoke": "pnpm run test:smoke:exports && (cd test/builders/rollup-ts && pnpm test)",
+	"test:smoke:exports": "./test/smoke/exports/test.sh",
+	"test:e2e": "vitest run --project browser",
+	"test:prod": "pnpm lint && pnpm test:smoke && pnpm test:ci && pnpm test:e2e",
+	"report-coverage": "cat ./coverage/lcov.info | coveralls",
+	precommit: "lint-staged",
+	prepublishOnly: "pnpm build",
+	tgz: "pnpm pack --out tswebextension.tgz"
+};
+var dependencies = {
+	"@adguard/agtree": "workspace:^",
+	"@adguard/dnr-converter": "workspace:^",
+	"@adguard/assistant": "catalog:",
+	"@adguard/extended-css": "2.2.0",
+	"@adguard/logger": "workspace:^",
+	"@adguard/scriptlets": "catalog:",
+	"@adguard/text-encoding": "^0.8.3",
+	"@adguard/tsurlfilter": "workspace:^",
+	bowser: "catalog:",
+	"chrome-types": "^0.1.342",
+	commander: "catalog:",
+	"fs-extra": "catalog:",
+	idb: "^8.0.1",
+	"lodash-es": "catalog:",
+	"lru-cache": "catalog:",
+	nanoid: "^5.0.9",
+	superjson: "^2.2.1",
+	tldts: "catalog:",
+	tslib: "catalog:",
+	"webextension-polyfill": "catalog:",
+	zod: "catalog:"
+};
+var devDependencies = {
+	"@adguard/eslint-plugin-logger-context": "^1.0.1",
+	"@vitest/browser": "catalog:",
+	"@vitest/browser-playwright": "catalog:",
+	playwright: "catalog:",
+	"@rollup/plugin-commonjs": "catalog:",
+	"@rollup/plugin-json": "catalog:",
+	"@rollup/plugin-node-resolve": "catalog:",
+	"@rollup/plugin-swc": "catalog:",
+	"@rollup/plugin-typescript": "catalog:",
+	"@swc-node/register": "catalog:",
+	"@swc/core": "catalog:",
+	"@types/chrome": "catalog:",
+	"@types/fs-extra": "catalog:",
+	"@types/lodash-es": "catalog:",
+	"@types/node": "catalog:",
+	"@types/sinon-chrome": "2.2.11",
+	"@types/webextension-polyfill": "catalog:",
+	"@typescript-eslint/eslint-plugin": "catalog:",
+	"@typescript-eslint/parser": "catalog:",
+	"@vitest/coverage-v8": "catalog:",
+	"@vitest/eslint-plugin": "^1.1.12",
+	coveralls: "catalog:",
+	"cross-env": "catalog:",
+	eslint: "catalog:",
+	"eslint-config-airbnb-base": "catalog:",
+	"eslint-config-airbnb-typescript": "catalog:",
+	"eslint-plugin-import": "catalog:",
+	"eslint-plugin-import-newlines": "catalog:",
+	"eslint-plugin-jsdoc": "catalog:",
+	"fake-indexeddb": "^6.0.0",
+	"lint-staged": "catalog:",
+	markdownlint: "catalog:",
+	"markdownlint-cli": "catalog:",
+	rimraf: "catalog:",
+	rollup: "catalog:",
+	"rollup-plugin-cleanup": "catalog:",
+	"rollup-plugin-dts": "catalog:",
+	"rollup-plugin-node-externals": "catalog:",
+	"sinon-chrome": "^3.0.1",
+	terser: "catalog:",
+	"ts-morph": "catalog:",
+	tsd: "catalog:",
+	tsx: "catalog:",
+	typescript: "catalog:",
+	vitest: "catalog:"
+};
+var version = "6.0.1";
+var packageJson = {
+	name: name,
+	description: description,
+	type: type,
+	main: main,
+	typings: typings,
+	sideEffects: sideEffects,
+	exports: exports$1,
+	bin: bin,
+	files: files,
+	author: author,
+	repository: repository,
+	license: license,
+	engines: engines,
+	bugs: bugs,
+	homepage: homepage,
+	scripts: scripts,
+	"lint-staged": {
+	"{src,test}/**/*.ts": [
+		"eslint"
+	]
+},
+	dependencies: dependencies,
+	devDependencies: devDependencies,
+	version: version
+};
+
+export { packageJson as p };

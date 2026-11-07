@@ -1,0 +1,3 @@
+# The only dependency install script required by the local build toolchain.
+allowBuilds:
+  esbuild: true

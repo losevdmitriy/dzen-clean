@@ -1,0 +1,71 @@
+{
+  "name": "@adguard/logger",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/es/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/es/index.mjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "license": "MIT",
+  "author": "Adguard Software Ltd.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdGuardSoftwareLimited/ext-tsurlfilter.git",
+    "directory": "packages/logger"
+  },
+  "bugs": {
+    "url": "https://github.com/AdguardTeam/tsurlfilter/issues"
+  },
+  "homepage": "https://github.com/AdguardTeam/tsurlfilter/tree/master/packages/logger#readme",
+  "keywords": [
+    "log",
+    "logger"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "eslint": "8.57.1",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-jsdoc": "^48.11.0",
+    "markdownlint": "^0.37.4",
+    "markdownlint-cli": "^0.44.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.28.0",
+    "tslib": "^2.8.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.5"
+  },
+  "version": "2.0.1",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "pnpm prebuild && rollup -c rollup.config.ts --configPlugin typescript && pnpm build:types",
+    "build:types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --outdir dist/types",
+    "test": "vitest run",
+    "test:ci": "vitest run --reporter default --reporter junit --outputFile=./tests-reports/logger.xml",
+    "test:prod": "pnpm lint && pnpm test:smoke && pnpm test:ci",
+    "lint": "pnpm lint:code && pnpm lint:types && pnpm lint:md",
+    "lint:code": "eslint --cache --ignore-path .gitignore .",
+    "lint:types": "tsc",
+    "lint:md": "markdownlint .",
+    "test:smoke": "(cd tests/smoke/esm && pnpm test) && (cd tests/smoke/cjs && pnpm test) && (cd tests/smoke/typescript && pnpm test)",
+    "tgz": "pnpm pack --out logger.tgz"
+  }
+}

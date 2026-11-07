@@ -1,0 +1,121 @@
+{
+  "manifest_version": 3,
+  "name": "Дзен Чисто",
+  "version": "0.3.1",
+  "description": "Защита от рекламы на обычных сайтах. Общие фильтры AdGuard и отдельный адаптер Дзена.",
+  "minimum_chrome_version": "121",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "declarativeNetRequest",
+    "scripting",
+    "alarms",
+    "webNavigation",
+    "webRequest",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Дзен Чисто",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_0",
+        "enabled": false,
+        "path": "engine-filters/declarative/ruleset_0/ruleset_0.json"
+      },
+      {
+        "id": "ruleset_1",
+        "enabled": false,
+        "path": "engine-filters/declarative/ruleset_1/ruleset_1.json"
+      },
+      {
+        "id": "ruleset_2",
+        "enabled": false,
+        "path": "engine-filters/declarative/ruleset_2/ruleset_2.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "settings.js",
+        "general.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true
+    },
+    {
+      "matches": [
+        "https://*.dzen.ru/*"
+      ],
+      "js": [
+        "settings.js",
+        "filters.js",
+        "content.js"
+      ],
+      "exclude_matches": [
+        "https://sso.dzen.ru/*",
+        "https://passport.dzen.ru/*",
+        "https://auth.dzen.ru/*",
+        "https://dzen.ru/profile/*",
+        "https://dzen.ru/editor/*",
+        "https://dzen.ru/studio/*"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "resources/empty-vast.xml"
+      ],
+      "matches": [
+        "https://*.dzen.ru/*"
+      ]
+    },
+    {
+      "resources": [
+        "web-accessible-resources/*",
+        "web-accessible-resources/redirects/*"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "author": "Jonny Hills",
+  "update_url": "https://extension-updates.opera.com/api/omaha/update/"
+}

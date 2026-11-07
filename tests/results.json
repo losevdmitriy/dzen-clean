@@ -1,0 +1,538 @@
+{
+  "version": "0.3.1",
+  "date": "2026-11-01",
+  "browser": "156.0.8078.80",
+  "passed": 65,
+  "suites": [
+    {
+      "suite": "test-results",
+      "date": "2026-11-01",
+      "browser": "156.0.8078.80",
+      "passed": 25,
+      "tests": [
+        "Parser rejects remote executable and unsupported semantics",
+        "Network compilation preserves types, exclusions, and Dzen scope",
+        "v0.1 migration preserves all five switches and selects standard profile",
+        "Experimental modules stop independently and preserve authentication cookies",
+        "Real MV3 load accepts complete bundled DNR set and early registration",
+        "Player exception and primary video are preserved",
+        "Experimental registration, VAST scope, individual module switches and XML",
+        "Concurrent preferences and disabled-state persistence",
+        "Automatic updater commits validated data and rollback rejects cancelled version",
+        "Corrupt response and offline update retain working filters",
+        "Diagnostics contains no page URLs, text, cookies, tokens or selectors",
+        "Synthetic feed-1: ordinary and experimental profiles; master restore",
+        "Synthetic feed-2: ordinary and experimental profiles; master restore",
+        "Synthetic feed-3: ordinary and experimental profiles; master restore",
+        "Synthetic article-1: ordinary and experimental profiles; master restore",
+        "Synthetic article-2: ordinary and experimental profiles; master restore",
+        "Synthetic article-3: ordinary and experimental profiles; master restore",
+        "Synthetic news-1: ordinary and experimental profiles; master restore",
+        "Synthetic news-2: ordinary and experimental profiles; master restore",
+        "Synthetic news-3: ordinary and experimental profiles; master restore",
+        "Synthetic video-1: ordinary and experimental profiles; master restore",
+        "Synthetic video-2: ordinary and experimental profiles; master restore",
+        "Synthetic video-3: ordinary and experimental profiles; master restore",
+        "Browser JavaScript is error-free throughout corpus",
+        "Browser restart and unpacked reattachment preserve disabled settings and cached filters"
+      ],
+      "details": {
+        "bundled": {
+          "cosmetic": 761,
+          "network": 611
+        },
+        "boundaryOutcome": [
+          {
+            "ruleId": 216114053,
+            "rulesetId": "ruleset_1"
+          }
+        ],
+        "feed-1": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 60,
+            "batches": 4,
+            "maxBatchMs": 3.1,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "feed-2": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 33,
+            "batches": 3,
+            "maxBatchMs": 3.7,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "feed-3": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 4032,
+            "batches": 30,
+            "maxBatchMs": 59.3,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 1,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "article-1": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 34,
+            "batches": 2,
+            "maxBatchMs": 4.5,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "article-2": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 30,
+            "batches": 2,
+            "maxBatchMs": 2.5,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "article-3": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 32,
+            "batches": 2,
+            "maxBatchMs": 3.3,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "news-1": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 30,
+            "batches": 2,
+            "maxBatchMs": 2.3,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "news-2": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 31,
+            "batches": 4,
+            "maxBatchMs": 2.2,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 1,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "news-3": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 0,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 28,
+            "batches": 2,
+            "maxBatchMs": 3.4,
+            "clicks": 0,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 0
+          },
+          "reasons": []
+        },
+        "video-1": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 1,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 52,
+            "batches": 4,
+            "maxBatchMs": 3,
+            "clicks": 1,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 20
+          },
+          "reasons": []
+        },
+        "video-2": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 1,
+          "closed": 1,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 34,
+            "batches": 4,
+            "maxBatchMs": 3.8,
+            "clicks": 1,
+            "closed": 1,
+            "invalidSelectors": 0,
+            "shadowRoots": 1,
+            "buttonChecks": 8
+          },
+          "reasons": []
+        },
+        "video-3": {
+          "kind": "feed",
+          "enabled": false,
+          "profile": "experimental",
+          "processing": false,
+          "hidden": 0,
+          "clicks": 1,
+          "closed": 0,
+          "capabilities": {
+            "closedShadow": true
+          },
+          "modules": {},
+          "performance": {
+            "scanned": 44,
+            "batches": 4,
+            "maxBatchMs": 3,
+            "clicks": 1,
+            "closed": 0,
+            "invalidSelectors": 0,
+            "shadowRoots": 0,
+            "buttonChecks": 10
+          },
+          "reasons": []
+        }
+      },
+      "limitation": "Synthetic localhost corpus and local extension APIs only. No live Dzen.ru or Yandex Browser verification."
+    },
+    {
+      "suite": "universal-results",
+      "date": "2026-11-01",
+      "browser": "156.0.8078.80",
+      "passed": 24,
+      "tests": [
+        "Schema 2 experimental preferences and exceptions migrate only to Dzen",
+        "Global correction parser rejects executable data and enforces update size limits",
+        "Static resources exclude all six Chromium-128 header-condition rules",
+        "Hostname disabling includes descendants but preserves sibling services",
+        "Universal CSS hides an ad and leaves article, forms, video and login controls visible",
+        "Only Base and Russian static sets are enabled; optional filter lists absent",
+        "All requested site groups receive shared network protection (browser API, no live navigation)",
+        "Simple popup, current-site toggle, subdomain policy and re-enabling",
+        "Restore UI creates a durable page-scoped exception and removal re-hides the ad",
+        "Synthetic search surface: typing, forms, comments, file attachment and controls",
+        "Synthetic mail surface: typing, forms, comments, file attachment and controls",
+        "Synthetic news surface: typing, forms, comments, file attachment and controls",
+        "Synthetic communities surface: typing, forms, comments, file attachment and controls",
+        "Synthetic video surface: typing, forms, comments, file attachment and controls",
+        "Universal video playback, pause, seek, fullscreen and next fixture",
+        "Long universal page preserves 1000 articles and does not run the Dzen button scanner",
+        "Network switch overrides an important block while cosmetic protection stays active",
+        "A browser DNR rejection rolls back without replacing the working cache",
+        "Dzen experimental registrations exclude a disabled Dzen subdomain",
+        "Rollback and an offline update preserve both static bases",
+        "No persistent visit history or page content; diagnostics contains only aggregate local data",
+        "A simulated browser denial reports limited visual access in the popup",
+        "Unsupported internal page reports actual lack of page access",
+        "Universal fixtures produce no uncaught page JavaScript errors"
+      ],
+      "details": {
+        "engine": {
+          "version": "03-f9f060cab96cf",
+          "previous": true,
+          "cosmetic": 1,
+          "network": 1,
+          "total": 156131,
+          "base": [
+            {
+              "id": 2,
+              "name": "AdGuard Base"
+            },
+            {
+              "id": 1,
+              "name": "AdGuard Russian"
+            }
+          ],
+          "status": {
+            "checkedAt": 1793548652441,
+            "error": null,
+            "state": "ready"
+          }
+        },
+        "groups": {
+          "search": [
+            "yandex.ru",
+            "google.com"
+          ],
+          "mail": [
+            "mail.yandex.ru",
+            "disk.yandex.ru",
+            "e.mail.ru"
+          ],
+          "news": [
+            "rbc.ru",
+            "lenta.ru",
+            "gazeta.ru",
+            "kp.ru",
+            "ria.ru",
+            "ixbt.com",
+            "3dnews.ru",
+            "habr.com"
+          ],
+          "communities": [
+            "pikabu.ru",
+            "vk.com",
+            "ok.ru"
+          ],
+          "video": [
+            "dzen.ru",
+            "rutube.ru",
+            "vkvideo.ru",
+            "youtube.com",
+            "twitch.tv"
+          ]
+        },
+        "storageKeys": [
+          "filterCache",
+          "filterStatus",
+          "settings"
+        ]
+      },
+      "limitations": "Local synthetic fixtures and browser filtering APIs. No live website compatibility or Yandex installation verification."
+    },
+    {
+      "suite": "migration-results",
+      "passed": 1,
+      "browser": "156.0.8078.80",
+      "method": "Seeded schema-2 storage/DNR fixture in the current unpacked extension, followed by a real Chrome restart and CDP reattachment. Not an installed CRX upgrade test.",
+      "settings": {
+        "enabled": true,
+        "cosmetic": true,
+        "network": false,
+        "autoUpdate": false,
+        "profile": "standard",
+        "skipVideo": false,
+        "heuristics": false,
+        "modules": {
+          "findSsrAd": false,
+          "initAdvManager": false,
+          "rtb": true,
+          "vast": false,
+          "cookies": false
+        },
+        "exceptions": [
+          {
+            "id": "legacy",
+            "selector": "#keep",
+            "path": "/a/keep",
+            "hosts": [],
+            "hostname": "dzen.ru"
+          }
+        ],
+        "disabledSites": [],
+        "dzen": {
+          "profile": "experimental",
+          "skipVideo": false,
+          "heuristics": false,
+          "modules": {
+            "findSsrAd": false,
+            "initAdvManager": false,
+            "rtb": true,
+            "vast": false,
+            "cookies": false
+          }
+        },
+        "schema": 3
+      }
+    },
+    {
+      "suite": "popup-regression-results",
+      "version": "0.3.1",
+      "passed": 5,
+      "tests": [
+        "Real profile dropdown persists the selected experimental value (0.3.0 regression)",
+        "Every global and Dzen checkbox saves its clicked value",
+        "Each experimental module checkbox persists independently through the real UI",
+        "Closing and reopening the popup keeps the experimental profile and chosen module",
+        "Chrome restart preserves UI-selected profile/modules while the global profile stays standard"
+      ],
+      "browser": "156.0.8078.80",
+      "limitation": "Real popup events, separate Chrome profile; no live Dzen navigation or Yandex install test."
+    },
+    {
+      "suite": "dzen-regression-results",
+      "version": "0.3.1",
+      "passed": 10,
+      "tests": [
+        "Age-qualified and split advertisement labels are recognized",
+        "Top banners, right column, split-label and text-only cards hide in the standard profile",
+        "A clearly labelled sponsored feed card may contain a Dzen article link",
+        "Known RTB containers with article links hide; the sidebar keeps grid structure",
+        "Article body, comments, subscriptions, navigation and video stay intact",
+        "Closed and late Shadow DOM ads use the same evidence without hiding useful siblings",
+        "Reused promoted cards become visible again when replaced by ordinary content",
+        "A newly detected ad can be restored with a page-scoped exception",
+        "1000 ordinary cards are retained and disabling restores all remaining ads",
+        "No automatic complaints, commercial clicks or uncaught page errors"
+      ],
+      "details": {
+        "performance": {
+          "scanned": 3224,
+          "batches": 23,
+          "maxBatchMs": 8,
+          "clicks": 0,
+          "closed": 0,
+          "invalidSelectors": 0,
+          "shadowRoots": 2,
+          "buttonChecks": 10
+        }
+      },
+      "browser": "156.0.8078.80",
+      "limitation": "Screenshot-inspired synthetic DOM, not a captured DOM from the user or a live Dzen test. Closed roots use a fixture API shim."
+    }
+  ],
+  "manual": {
+    "userObservedOn03": "Partial ad reduction; leaks at top/right/in-feed and reverting profile. User screenshots supplied, real DOM not captured.",
+    "status031": "not-performed",
+    "items": [
+      "Yandex Browser CRX 0.3.1 update and persistence",
+      "Real Dzen effectiveness of updated heuristics",
+      "Chromium 121 runtime and closed-shadow API availability",
+      "Live authenticated website workflows and real video ads"
+    ]
+  },
+  "packageVerification": "See adjacent dzen-clean-0.3.1-package-check.json"
+}

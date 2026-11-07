@@ -1,0 +1,27 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Дзен Чисто</title><link rel="stylesheet" href="popup.css"></head><body>
+<header><img src="icons/48.png" width="40" height="40" alt=""><div><h1>Дзен Чисто <sup>0.3.1</sup></h1><p>Спокойный интернет</p></div></header><main>
+<section class="protection"><h2 id="protection">Проверяем защиту…</h2><p id="site">Текущий сайт</p></section>
+<button id="toggle-site" disabled>Выключить на этом сайте</button>
+<button id="list-blocks" class="secondary" disabled>Вернуть скрытый элемент</button>
+<section id="restore-panel" hidden><label for="blocks">Выберите скрытый элемент</label><select id="blocks"></select><button id="restore" disabled>Вернуть элемент</button><small>Если список пуст или элемент удалён программно, выключите защиту на сайте.</small></section>
+<p id="status" role="status" aria-live="polite">Загрузка…</p>
+<details id="advanced"><summary>Дополнительно</summary>
+<label class="master"><span>Защита на всех сайтах</span><input id="enabled" type="checkbox" disabled></label>
+<label><span>Визуальные фильтры</span><input id="cosmetic" type="checkbox" disabled></label>
+<label><span>Сетевые фильтры</span><input id="network" type="checkbox" disabled></label>
+<label><span>Обновлять исправления<small>При запуске и раз в шесть часов</small></span><input id="autoUpdate" type="checkbox" disabled></label>
+<p id="filters">Загрузка фильтров…</p><div class="actions"><button id="update" disabled>Обновить правила</button><button id="rollback" disabled>Откатить правила</button></div>
+<details><summary>Настройки Дзена</summary>
+<label class="profile"><span>Профиль Дзена</span><select id="profile" disabled><option value="standard">Обычный</option><option value="experimental">Экспериментальный</option></select></label>
+<label><span>Пропускать рекламу кнопкой</span><input id="skipVideo" type="checkbox" disabled></label>
+<label><span>Дополнительное распознавание</span><input id="heuristics" type="checkbox" disabled></label>
+<p id="main-capability"></p><p>Собственные модули работают только на Дзене. После изменения перезагрузите его вкладки.</p>
+<div id="experimental"><p>Профиль открывает настройки ниже. Нужные модули включаются отдельно.</p>
+<label><span>Ранняя обработка ленты</span><input data-module="findSsrAd" type="checkbox" disabled></label>
+<label><span>Инициализация рекламы</span><input data-module="initAdvManager" type="checkbox" disabled></label>
+<label><span>Рекламные данные</span><input data-module="rtb" type="checkbox" disabled></label>
+<label><span>Пустой VAST</span><input data-module="vast" type="checkbox" disabled></label>
+<label><span>Известные anti-adblock cookies</span><input data-module="cookies" type="checkbox" disabled></label></div></details>
+<details><summary>Исключения</summary><p id="disabled-sites"></p><label for="selector">CSS-селектор на этой странице</label><input type="text" id="selector" spellcheck="false" placeholder="#useful-widget"><button id="add-exception" disabled>Сохранить исключение</button><div id="exceptions"></div></details>
+<p id="stats"></p><button id="reload" class="secondary" disabled>Обновить текущую вкладку</button><button id="diagnostics" class="secondary">Скачать диагностику</button>
+<p style="margin:14px 0"><a href="privacy.html" target="_blank" rel="noopener">О расширении и конфиденциальность</a></p></details></main><footer>Локальные настройки · без отправки диагностики</footer><script src="settings.js"></script><script src="popup.js"></script></body></html>

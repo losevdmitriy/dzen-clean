@@ -1,0 +1,39 @@
+DZEN CLEAN 0.3.1 — REVIEWER NOTES
+Publisher: Jonny Hills
+Support/privacy contact: hillsjonny86@gmail.com
+
+PURPOSE
+Advertising request/content filtering on ordinary HTTP/HTTPS websites, with a dedicated Dzen cosmetic adapter. No ratings, complaints, commercial CTA clicks, or other account actions are automated. Video skip/close clicks are limited to discovered players and explicit supported labels.
+
+ENGINE AND SOURCES
+The engine is @adguard/api-mv3 3.0.0. Packaged Base (2) and Russian (1) are pinned through @adguard/dnr-rulesets 5.0.20261013160024. There are no runtime CDN script dependencies. Full static bases and program code update with a new extension build.
+Readable application source, unbundled published dependency JS and notices are in the installable ZIP. The exact package lock, build/test tools, corpus and raw filter text are in the separate source-review companion. This is esbuild minification, not deliberate source obfuscation. The optional full source-review archive also contains original filter text and the test corpus. See THIRD_PARTY.md for the pinned API compatibility bridge and metadata conversion.
+
+CORRECTION UPDATES ARE DATA
+Three fixed files are checked at startup/every six hours when enabled, or manually:
+https://raw.githubusercontent.com/easylist/ruadlist/master/css-fixes-experimental.txt
+https://raw.githubusercontent.com/easylist/ruadlist/master/advblock/whitelist.txt
+https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/CyrillicFilters/RussianFilter/sections/antiadblock.txt
+The bundled AGTree parser accepts only supported domain-scoped block/allow rules and native CSS selectors. Remote JS/scriptlets, complex program commands, includes and conditional branches are not executed. The browser/engine validates supported limits. A failed update preserves the prior working cache; rollback is available.
+
+LOCAL PROGRAM RULES / CSP
+The library receives the packaged localScriptRulesJs allowlist. Arbitrary remote executable rules are not accepted. No userScripts permission is granted. The CSP wasm-unsafe-eval token is used for packaged WebAssembly/RE2 facilities, not to permit remotely hosted JS.
+
+OPTIONAL DZEN MODULES
+The fresh profile is standard. All custom experimental modules are initially OFF and each needs an independent checkbox. Their packaged files are limited to Dzen matches, with auth/editor exclusions. The known property hooks (findSsrAd, initAdvManager, rtb), fixed anti-adblock cookie module and empty VAST redirect are described in the source. Changing a module/profile requires reloading Dzen tabs. They are not deployed on other domains.
+
+PRIVACY
+Page/request context is processed locally. There is no publisher telemetry server or automatic report upload. Explicit user exceptions can contain a hostname, a path without query/fragment and selectors; these are stored locally, not sent to the publisher. Engine statistics, stealth/cookie ageing and cookie-controller rules are disabled. Diagnostic export is explicit and excludes visited URLs/hostnames, page text, cookies, tokens and exception selectors. The complete RU/EN policy is bundled as privacy.html, available from Advanced, with a standalone web copy supplied in the publication kit.
+
+LICENCE
+Use the custom GNU GPL version 3 licence notice, not Opera's default CC BY-NC-ND as a replacement. Third-party licences and attribution are preserved. The extension does not claim endorsement by Dzen/Yandex/Opera/AdGuard.
+
+TESTING
+The original 0.3.1 source passed 65 automated Chrome/synthetic tests on 1 November 2026. The store package has additional current publication-smoke checks; see validation-smoke.json. Screenshots show the actual extension popup and a clearly labelled localhost CSS-filtering demonstration. They are not captured live Dzen pages or measurements of real video-ad removal.
+No Opera executable was found in common local installation locations, so we do not claim an actual Opera runtime test here. Closed-shadow support also depends on the browser API; the synthetic corpus uses an API shim. Live Dzen is inaccessible from this test environment. Actual publisher/browser acceptance remains a review/manual test, not something inferred from the number of rules.
+
+REPRODUCIBLE CHECK
+Load the unzipped extension from the ZIP into a separate developer-mode browser profile. Open the toolbar popup, verify standard settings, disable/re-enable the current HTTP/HTTPS hostname and reload. Test a profile/module change through the real UI, then reopen the popup. The optional test corpus uses local fixtures and can be run from the source-review archive after installing exact lock-file dependencies. No login credentials are needed for local tests.
+
+PACKAGING REVISION R2
+The original upload was rejected with “Invalid type on file: tools/verify-package.py”. All development tools and package-manager files were removed from the installable ZIP and kept in the source-review archive. Required runtime YAML/JSON/assets are retained; filtering execution bytes are unchanged.
